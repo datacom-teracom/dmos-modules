@@ -28,7 +28,7 @@ class Cliconf(CliconfBase):
         if not flags:
             flags = []
         if source == 'running':
-            cmd = 'show running-config '
+            cmd = 'show running-config | nomore '
         else:
             cmd = 'show startup-config '
 
@@ -123,6 +123,7 @@ class Cliconf(CliconfBase):
                     results.append(self.send_command(**line))
                     requests.append(cmd)
 
+            self.send_command('commit')
             self.send_command('end')
         else:
             raise ValueError('check mode is not supported')
@@ -143,7 +144,7 @@ class Cliconf(CliconfBase):
             for line in candidate:
                 if line != 'None':
                     commands += (' ' + line + '\n')
-                self.send_command('config terminal', sendonly=True)
+                self.send_command('config', sendonly=True)
                 obj = {'command': commands, 'sendonly': True}
                 results.append(self.send_command(**obj))
                 requests.append(commands)
@@ -243,7 +244,7 @@ class Cliconf(CliconfBase):
         if commit:
             for key, value in iteritems(banners_obj):
                 key += ' %s' % multiline_delimiter
-                self.send_command('config terminal', sendonly=True)
+                self.send_command('config', sendonly=True)
                 for cmd in [key, value, multiline_delimiter]:
                     obj = {'command': cmd, 'sendonly': True}
                     results.append(self.send_command(**obj))
@@ -289,7 +290,7 @@ class Cliconf(CliconfBase):
         with defaults.
         :return: valid default filter
         """
-        out = self.get('show running-config ?')
+        out = self.get('show running-config ? | nomore')
         out = to_text(out, errors='surrogate_then_replace')
 
         commands = set()

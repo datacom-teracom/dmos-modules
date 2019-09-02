@@ -1,4 +1,8 @@
 - name: show hostname
-  dmos_command:
-    commands:
-      - show running-config hostname
+  dmos_config:
+    lines:
+      # - no dot1q
+      - dot1q vlan 667 interface gigabit-ethernet-1/1/1
+      - dot1q vlan 670 interface gigabit-ethernet-1/1/1
+      - dot1q vlan 673 interface gigabit-ethernet-1/1/1
+      - dot1q vlan 674 interface gigabit-ethernet-1/1/1

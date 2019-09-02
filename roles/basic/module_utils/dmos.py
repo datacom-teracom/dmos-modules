@@ -94,7 +94,6 @@ def get_config(module, flags=None):
             out = connection.get_config(flags=flags)
         except ConnectionError as exc:
             if section_filter:
-                # Some ios devices don't understand `| section foo`
                 out = get_config(module, flags=flags[:-1])
             else:
                 module.fail_json(msg=to_text(

@@ -1,0 +1,8 @@
+[vyos]
+192.168.0.54
+[vyos:vars]
+ansible_ssh_pass=vyos
+[dmos]
+dm4170 ansible_host=192.168.0.25 ansible_network_os=dmos
+[dmos:vars]
+ansible_ssh_pass=admin

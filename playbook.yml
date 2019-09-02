@@ -1,0 +1,6 @@
+- name: Configure DmoS
+  hosts: dmos
+  remote_user: admin
+  connection: network_cli
+  roles:
+    - basic

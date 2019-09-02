@@ -1,0 +1,4 @@
+- name: show hostname
+  dmos_command:
+    commands:
+      - show running-config hostname

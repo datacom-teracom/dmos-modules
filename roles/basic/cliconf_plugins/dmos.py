@@ -25,15 +25,7 @@ class Cliconf(CliconfBase):
         if format:
             raise ValueError("'format' value %s is not supported for get_config" % format)
 
-        if not flags:
-            flags = []
-        if source == 'running':
-            cmd = 'show running-config | nomore '
-        else:
-            cmd = 'show startup-config '
-
-        cmd += ' '.join(to_list(flags))
-        cmd = cmd.strip()
+        cmd = 'show running-config | details | display json | nomore'
 
         return self.send_command(cmd)
 

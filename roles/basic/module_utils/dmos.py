@@ -67,40 +67,20 @@ def check_args(module, warnings):
     pass
 
 
-def get_defaults_flag(module):
+def edit_config(module, candidate):
     connection = get_connection(module)
     try:
-        out = connection.get_defaults_flag()
+        return connection.edit_config(candidate=candidate)
     except ConnectionError as exc:
-        module.fail_json(msg=to_text(exc, errors='surrogate_then_replace'))
-    return to_text(out, errors='surrogate_then_replace').strip()
+        module.fail_json(msg=to_text(exc))
 
 
-def get_config(module, flags=None):
-    flags = to_list(flags)
-
-    section_filter = False
-    if flags and 'section' in flags[-1]:
-        section_filter = True
-
-    flag_str = ' '.join(flags)
-
-    global _DEVICE_CONFIGS
+def get_diff(module, candidates):
+    connection = get_connection(module)
     try:
-        return _DEVICE_CONFIGS[flag_str]
-    except KeyError:
-        connection = get_connection(module)
-        try:
-            out = connection.get_config(flags=flags)
-        except ConnectionError as exc:
-            if section_filter:
-                out = get_config(module, flags=flags[:-1])
-            else:
-                module.fail_json(msg=to_text(
-                    exc, errors='surrogate_then_replace'))
-        cfg = to_text(out, errors='surrogate_then_replace').strip()
-        _DEVICE_CONFIGS[flag_str] = cfg
-        return cfg
+        return connection.get_diff(candidates=candidates)
+    except ConnectionError as exc:
+        module.fail_json(msg=to_text(exc))
 
 
 def run_commands(module, commands, check_rc=True):
@@ -109,65 +89,3 @@ def run_commands(module, commands, check_rc=True):
         return connection.run_commands(commands=commands, check_rc=check_rc)
     except ConnectionError as exc:
         module.fail_json(msg=to_text(exc))
-
-
-def load_config(module, commands):
-    connection = get_connection(module)
-
-    try:
-        resp = connection.edit_config(commands)
-        return resp.get('response')
-    except ConnectionError as exc:
-        module.fail_json(msg=to_text(exc))
-
-
-def normalize_interface(name):
-    """Return the normalized interface name
-    """
-    if not name:
-        return
-
-    def _get_number(name):
-        digits = ''
-        for char in name:
-            if char.isdigit() or char in '/.':
-                digits += char
-        return digits
-
-    if name.lower().startswith('gi'):
-        if_type = 'GigabitEthernet'
-    elif name.lower().startswith('te'):
-        if_type = 'TenGigabitEthernet'
-    elif name.lower().startswith('fa'):
-        if_type = 'FastEthernet'
-    elif name.lower().startswith('fo'):
-        if_type = 'FortyGigabitEthernet'
-    elif name.lower().startswith('et'):
-        if_type = 'Ethernet'
-    elif name.lower().startswith('vl'):
-        if_type = 'Vlan'
-    elif name.lower().startswith('lo'):
-        if_type = 'loopback'
-    elif name.lower().startswith('po'):
-        if_type = 'port-channel'
-    elif name.lower().startswith('nv'):
-        if_type = 'nve'
-    elif name.lower().startswith('twe'):
-        if_type = 'TwentyFiveGigE'
-    elif name.lower().startswith('hu'):
-        if_type = 'HundredGigE'
-    else:
-        if_type = None
-
-    number_list = name.split(' ')
-    if len(number_list) == 2:
-        if_number = number_list[-1].strip()
-    else:
-        if_number = _get_number(name)
-
-    if if_type:
-        proper_interface = if_type + if_number
-    else:
-        proper_interface = name
-
-    return proper_interface

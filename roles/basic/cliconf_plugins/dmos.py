@@ -5,42 +5,77 @@ import re
 import time
 import json
 
-from itertools import chain
-
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common._collections_compat import Mapping
-from ansible.module_utils.six import iteritems
-from ansible.module_utils.network.common.config import NetworkConfig, dumps
+from ansible.module_utils.network.common.config import dumps
 from ansible.module_utils.network.common.utils import to_list
 from ansible.plugins.cliconf import CliconfBase
 
 
 class Cliconf(CliconfBase):
 
-    def get_config(self, command=None):
-        if command:
-            cmd = 'show running-config | details | display keypath '
+    def get_config(self):
+        config_cmd = 'show running-config | details | display curly-braces | nomore'
+        out = self.send_command(config_cmd)
 
-            command = command.replace("-", " ")
-            command = command.split(" ")
+        ret = out.split("\n")
 
-            its_no = False
-            for word in command:
-                if word == 'no':
+        cmds = []
+        while(len(ret)):
+            cmd = ""
+            discart_command = True
+            for i, word in enumerate(ret, 0):
+                cmd += word
+                if word == "":
+                    ret.pop(i)
+                    break
+
+                if ";" in word:
+                    ret.pop(i)
+                    discart_command = False
+                    break
+
+                if "}" in word:
+                    ret.pop(i)
+                    for j in range(i - 1, -1, -1):
+                        if "{" in ret[j]:
+                            ret.pop(j)
+                            break
+                    break
+
+            if not discart_command:
+                cmd = cmd.replace("{", "").replace(";", "").replace("}", "")
+                cmd = re.sub(' +', ' ', cmd)
+                cmds.append(cmd)
+
+        return cmds
+
+    def get_diff(self, candidates=None):
+        out = []
+        if candidates:
+            configs = self.get_config()
+
+            for candidate in candidates:
+                command = re.sub(' +', ' ', candidate)
+
+                its_no = False
+                if command.split()[0] == "no":
                     its_no = True
-                    continue
-                cmd += '| include ' + word + ' '
+                    command = command.replace("no ", "")
 
-            cmd += '| nomore'
+                contains = False
+                for config in configs:
+                    if command in config:
+                        contains = True
+                        break
 
-            out = self.send_command(cmd)
-
-            if its_no:
-                if out:
-                    return None
+                if contains:
+                    if its_no:
+                        out.append("no " + command)
                 else:
-                    return command
+                    if not its_no:
+                        out.append(command)
 
         return out
 
@@ -136,46 +171,10 @@ class Cliconf(CliconfBase):
 
     def get_capabilities(self):
         result = super(Cliconf, self).get_capabilities()
-        result['rpc'] += ['edit_banner', 'get_diff',
-                          'run_commands', 'get_defaults_flag']
+        result['rpc'] += ['get_diff', 'run_commands']
         result['device_operations'] = self.get_device_operations()
         result.update(self.get_option_values())
         return json.dumps(result)
-
-    def edit_banner(self, candidate=None, multiline_delimiter="@", commit=True):
-        """
-        Edit banner on remote device
-        :param banners: Banners to be loaded in json format
-        :param multiline_delimiter: Line delimiter for banner
-        :param commit: Boolean value that indicates if the device candidate
-               configuration should be  pushed in the running configuration or discarded.
-        :param diff: Boolean flag to indicate if configuration that is applied on remote host should
-                     generated and returned in response or not
-        :return: Returns response of executing the configuration command received
-             from remote host
-        """
-        resp = {}
-        banners_obj = json.loads(candidate)
-        results = []
-        requests = []
-        if commit:
-            for key, value in iteritems(banners_obj):
-                key += ' %s' % multiline_delimiter
-                self.send_command('config', sendonly=True)
-                for cmd in [key, value, multiline_delimiter]:
-                    obj = {'command': cmd, 'sendonly': True}
-                    results.append(self.send_command(**obj))
-                    requests.append(cmd)
-
-                self.send_command('end', sendonly=True)
-                time.sleep(0.1)
-                results.append(self.send_command('\n'))
-                requests.append('\n')
-
-        resp['request'] = requests
-        resp['response'] = results
-
-        return resp
 
     def run_commands(self, commands=None, check_rc=True):
         if commands is None:
@@ -201,48 +200,3 @@ class Cliconf(CliconfBase):
             responses.append(out)
 
         return responses
-
-    def get_defaults_flag(self):
-        """
-        The method identifies the filter that should be used to fetch running-configuration
-        with defaults.
-        :return: valid default filter
-        """
-        out = self.get('show running-config ? | nomore')
-        out = to_text(out, errors='surrogate_then_replace')
-
-        commands = set()
-        for line in out.splitlines():
-            if line.strip():
-                commands.add(line.strip().split()[0])
-
-        if 'all' in commands:
-            return 'all'
-        else:
-            return 'full'
-
-    def _extract_banners(self, config):
-        banners = {}
-        banner_cmds = re.findall(r'^banner (\w+)', config, re.M)
-        for cmd in banner_cmds:
-            regex = r'banner %s \^C(.+?)(?=\^C)' % cmd
-            match = re.search(regex, config, re.S)
-            if match:
-                key = 'banner %s' % cmd
-                banners[key] = match.group(1).strip()
-
-        for cmd in banner_cmds:
-            regex = r'banner %s \^C(.+?)(?=\^C)' % cmd
-            match = re.search(regex, config, re.S)
-            if match:
-                config = config.replace(str(match.group(1)), '')
-
-        config = re.sub(r'banner \w+ \^C\^C', '!! banner removed', config)
-        return config, banners
-
-    def _diff_banners(self, want, have):
-        candidate = {}
-        for key, value in iteritems(want):
-            if value != have.get(key):
-                candidate[key] = value
-        return candidate

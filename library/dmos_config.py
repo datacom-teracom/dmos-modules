@@ -2,25 +2,12 @@
 
 import json
 
-from ansible.module_utils._text import to_text
-from ansible.module_utils.connection import ConnectionError
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.network.common.config import NetworkConfig, dumps
 
-from ansible.module_utils.dmos import run_commands, get_config
-from ansible.module_utils.dmos import get_defaults_flag, get_connection
+from ansible.module_utils.dmos import get_connection
 from ansible.module_utils.dmos import dmos_argument_spec
 from ansible.module_utils.dmos import check_args
-
-
-def get_diff(connection=None, commands=None):
-    candidate = []
-    if connection:
-        for command in commands:
-            if not connection.get_config(command=command):
-                candidate.append(command)
-
-    return candidate
+from ansible.module_utils.dmos import get_diff, edit_config
 
 
 def main():
@@ -47,18 +34,16 @@ def main():
     check_args(module, warnings)
     result['warnings'] = warnings
 
-    connection = get_connection(module)
-
     if module.params['lines']:
-        commands = module.params['lines']
+        candidates = module.params['lines']
 
-        candidate = get_diff(connection=connection, commands=commands)
+        candidate = get_diff(module=module, candidates=candidates)
 
         if candidate:
             result['changes'] = candidate
 
             if not module.check_mode:
-                connection.edit_config(candidate=candidate)
+                edit_config(module=module, candidate=candidate)
 
             result['changed'] = True
 

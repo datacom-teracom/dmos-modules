@@ -64,10 +64,14 @@ class Cliconf(CliconfBase):
                     its_no = True
                     command = command.replace("no ", "")
 
-                contains = False
+                contains = True
                 for config in configs:
-                    if command in config:
-                        contains = True
+                    contains = True
+                    for word in command.split():
+                        if word not in config:
+                            contains = False
+                            break
+                    if contains:
                         break
 
                 if contains:

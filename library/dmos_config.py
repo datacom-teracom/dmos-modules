@@ -43,7 +43,8 @@ def main():
             result['changes'] = candidate
 
             if not module.check_mode:
-                edit_config(module=module, candidate=candidate)
+                response = edit_config(module=module, candidate=candidate)
+                result['response'] = response['response']
 
             result['changed'] = True
 

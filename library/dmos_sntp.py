@@ -8,30 +8,22 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.dmos import dmos_argument_spec
 from ansible.module_utils.dmos import check_args
 from ansible.module_utils.dmos import get_diff, edit_config
-
-
-def validate_ip(address):
-    try:
-        ipaddress.ip_address(unicode(address))
-        return True
-    except:
-        return False
-
-
-def is_v4(address):
-    return type(ipaddress.ip_address(unicode(address))) is ipaddress.IPv4Address
+from ansible.module_utils.dmos import validate_ip, is_v4
 
 
 def parse_commands(module, warnings):
     commands = []
     state_prefix = '' if module.params['state'] == 'present' else 'no '
 
-    if module.params['source'] != None and validate_ip(module.params['source']):
-        v_type = 'ipv6'
-        if is_v4(module.params['source']):
-            v_type = 'ipv4'
-        commands.append('{0}sntp source {1} address {2}'.format(
-            state_prefix, v_type, module.params['source']))
+    if module.params['source'] != None:
+        if validate_ip(module.params['source']):
+            v_type = 'ipv6'
+            if is_v4(module.params['source']):
+                v_type = 'ipv4'
+            commands.append('{0}sntp source {1} address {2}'.format(
+                state_prefix, v_type, module.params['source']))
+        else:
+            warnings.append('Invalid ip format')
 
     if module.params['min_pool'] != None:
         commands.append(
@@ -48,12 +40,15 @@ def parse_commands(module, warnings):
         warnings.append(
             'To configure authentication key its necessary to provide key id')
 
-    if module.params['server'] != None and validate_ip(module.params['server']):
-        command = '{0}sntp server {1}'.format(
-            state_prefix, module.params['server'])
-        if module.params['key_id'] != None:
-            command += ' key {0}'.format(module.params['key_id'])
-        commands.append(command)
+    if module.params['server'] != None:
+        if validate_ip(module.params['server']):
+            command = '{0}sntp server {1}'.format(
+                state_prefix, module.params['server'])
+            if module.params['key_id'] != None:
+                command += ' key {0}'.format(module.params['key_id'])
+            commands.append(command)
+        else:
+            warnings.append('Invalid ip format')
 
     if module.params['client'] != None:
         prefix = '' if module.params['client'] is True else 'no '

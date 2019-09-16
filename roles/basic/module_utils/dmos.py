@@ -1,4 +1,5 @@
 import json
+import ipaddress
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import env_fallback
@@ -89,3 +90,15 @@ def run_commands(module, commands, check_rc=True):
         return connection.run_commands(commands=commands, check_rc=check_rc)
     except ConnectionError as exc:
         module.fail_json(msg=to_text(exc))
+
+
+def validate_ip(address):
+    try:
+        ipaddress.ip_address(unicode(address))
+        return True
+    except:
+        return False
+
+
+def is_v4(address):
+    return type(ipaddress.ip_address(unicode(address))) is ipaddress.IPv4Address

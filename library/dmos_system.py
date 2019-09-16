@@ -3,13 +3,14 @@
 import json
 
 from ansible.module_utils.basic import AnsibleModule
+
 from ansible.module_utils.network.common.utils import to_lines
 
 from ansible.module_utils.dmos import run_commands
 from ansible.module_utils.dmos import dmos_argument_spec, check_args
 
 
-def parse_command(module):
+def parse_command(module, warnings):
     command = """set system clock {0:02d}:{1:02d}:{2:02d} """.format(
         module.params['hour'], module.params['minute'], module.params['second'])
 
@@ -27,7 +28,6 @@ def main():
         dir_path=dict(type='path')
     )
     argument_spec = dict(
-        src=dict(type='path'),
         hour=dict(required=True, type='int', choices=range(0, 24)),
         minute=dict(required=True, type='int', choices=range(0, 61)),
         second=dict(type='int', choices=range(0, 61), default=0),
@@ -41,17 +41,17 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)
 
-    result = {'changed': False}
+    result = {'changed': True}
 
     warnings = list()
     check_args(module, warnings)
 
     command = parse_command(module, warnings)
-    result['warnings'] = warnings
     result['command'] = command
 
     responses = run_commands(module, [command])
 
+    result['warnings'] = warnings
     result.update({
         'stdout': responses,
         'stdout_lines': list(to_lines(responses)),

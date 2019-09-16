@@ -36,12 +36,12 @@ def main():
                            supports_check_mode=True)
 
     warnings = list()
-    result = {'changed': False, 'warnings': warnings}
     check_args(module, warnings)
     commands = parse_commands(module, warnings)
 
     responses = run_commands(module, commands)
 
+    result = {'changed': False, 'warnings': warnings}
     result.update({
         'stdout': responses,
         'stdout_lines': list(to_lines(responses)),

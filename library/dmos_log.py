@@ -7,7 +7,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.dmos import dmos_argument_spec
 from ansible.module_utils.dmos import check_args
 from ansible.module_utils.dmos import get_diff, edit_config
-from ansible.module_utils.dmos import validate_ip, is_v4
+from ansible.module_utils.dmos import validate_ip
 
 
 def parse_commands(module, warnings):
@@ -37,10 +37,9 @@ def main():
         dir_path=dict(type='path')
     )
     argument_spec = dict(
-        src=dict(type='path'),
         syslog=dict(type='str'),
         severity=dict(choices=['alert', 'critical', 'emergency',
-                              'error', 'informational', 'notice', 'warning']),
+                               'error', 'informational', 'notice', 'warning']),
         state=dict(choices=['absent', 'present'], default='present')
     )
 
@@ -54,21 +53,21 @@ def main():
     warnings = list()
     check_args(module, warnings)
 
-    candidates = parse_commands(module, warnings)
+    commands = parse_commands(module, warnings)
 
-    result['warnings'] = warnings
-    if candidates:
-        candidate = get_diff(module=module, candidates=candidates)
+    if commands:
+        candidates = get_diff(module=module, candidates=commands)
 
-        if candidate:
-            result['changes'] = candidate
+        if candidates:
+            result['changes'] = candidates
 
             if not module.check_mode:
-                response = edit_config(module=module, candidate=candidate)
+                response = edit_config(module=module, candidates=candidates)
                 result['response'] = response['response']
 
             result['changed'] = True
 
+    result['warnings'] = warnings
     module.exit_json(**result)
 
 

@@ -4,7 +4,6 @@ import json
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ansible.module_utils.dmos import get_connection
 from ansible.module_utils.dmos import dmos_argument_spec
 from ansible.module_utils.dmos import check_args
 from ansible.module_utils.dmos import get_diff, edit_config
@@ -18,8 +17,6 @@ def main():
         dir_path=dict(type='path')
     )
     argument_spec = dict(
-        src=dict(type='path'),
-
         lines=dict(aliases=['commands'], type='list')
     )
 
@@ -32,22 +29,20 @@ def main():
 
     warnings = list()
     check_args(module, warnings)
-    result['warnings'] = warnings
 
     if module.params['lines']:
-        candidates = module.params['lines']
+        candidates = get_diff(module=module, candidates=module.params['lines'])
 
-        candidate = get_diff(module=module, candidates=candidates)
-
-        if candidate:
-            result['changes'] = candidate
+        if candidates:
+            result['changes'] = candidates
 
             if not module.check_mode:
-                response = edit_config(module=module, candidate=candidate)
+                response = edit_config(module=module, candidates=candidates)
                 result['response'] = response['response']
 
             result['changed'] = True
 
+    result['warnings'] = warnings
     module.exit_json(**result)
 
 

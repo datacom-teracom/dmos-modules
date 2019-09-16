@@ -3,7 +3,6 @@ import ipaddress
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import env_fallback
-from ansible.module_utils.network.common.utils import to_list
 from ansible.module_utils.connection import Connection, ConnectionError
 
 _DEVICE_CONFIGS = {}
@@ -68,10 +67,10 @@ def check_args(module, warnings):
     pass
 
 
-def edit_config(module, candidate):
+def edit_config(module, candidates):
     connection = get_connection(module)
     try:
-        return connection.edit_config(candidate=candidate)
+        return connection.edit_config(candidates=candidates)
     except ConnectionError as exc:
         module.fail_json(msg=to_text(exc))
 

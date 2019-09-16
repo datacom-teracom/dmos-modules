@@ -83,17 +83,17 @@ class Cliconf(CliconfBase):
 
         return out
 
-    def edit_config(self, candidate=None, commit=True, replace=None, comment=None):
+    def edit_config(self, candidates=None, commit=True, replace=None, comment=None):
         resp = {}
         operations = self.get_device_operations()
         self.check_edit_config_capability(
-            operations, candidate, commit, replace, comment)
+            operations, candidates, commit, replace, comment)
 
         results = []
         requests = []
         if commit:
             self.send_command('config')
-            for line in to_list(candidate):
+            for line in to_list(candidates):
                 if not isinstance(line, Mapping):
                     line = {'command': line}
 

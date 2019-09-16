@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import json
-import ipaddress
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -25,13 +24,13 @@ def parse_commands(module, warnings):
         else:
             warnings.append('Invalid ip format')
 
-    if module.params['min_pool'] != None:
+    if module.params['min_poll'] != None:
         commands.append(
-            '{0}sntp min-poll {1}'.format(state_prefix, module.params['min_pool']))
+            '{0}sntp min-poll {1}'.format(state_prefix, module.params['min_poll']))
 
-    if module.params['max_pool'] != None:
+    if module.params['max_poll'] != None:
         commands.append(
-            '{0}sntp max-poll {1}'.format(state_prefix, module.params['max_pool']))
+            '{0}sntp max-poll {1}'.format(state_prefix, module.params['max_poll']))
 
     if module.params['key_id'] != None and module.params['auth_key'] != None:
         commands.append('{0}sntp authentication-key {1} md5 {2}'.format(
@@ -69,11 +68,10 @@ def main():
         dir_path=dict(type='path')
     )
     argument_spec = dict(
-        src=dict(type='path'),
         server=dict(type='str'),
         source=dict(type='str'),
-        min_pool=dict(type='int', choices=range(3, 18)),
-        max_pool=dict(type='int', choices=range(3, 18)),
+        min_poll=dict(type='int', choices=range(3, 18)),
+        max_poll=dict(type='int', choices=range(3, 18)),
         client=dict(type='bool'),
         auth=dict(type='bool'),
         auth_key=dict(type='str'),
@@ -91,21 +89,21 @@ def main():
     warnings = list()
     check_args(module, warnings)
 
-    candidates = parse_commands(module, warnings)
+    commands = parse_commands(module, warnings)
 
-    result['warnings'] = warnings
-    if candidates:
-        candidate = get_diff(module=module, candidates=candidates)
+    if commands:
+        candidates = get_diff(module=module, candidates=commands)
 
-        if candidate:
-            result['changes'] = candidate
+        if candidates:
+            result['changes'] = candidates
 
             if not module.check_mode:
-                response = edit_config(module=module, candidate=candidate)
+                response = edit_config(module=module, candidates=candidates)
                 result['response'] = response['response']
 
             result['changed'] = True
 
+    result['warnings'] = warnings
     module.exit_json(**result)
 
 

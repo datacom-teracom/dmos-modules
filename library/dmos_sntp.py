@@ -14,48 +14,51 @@ def parse_commands(module, warnings):
     commands = []
     state_prefix = '' if module.params['state'] == 'present' else 'no '
 
-    if module.params['source'] != None:
-        if validate_ip(module.params['source']):
-            v_type = 'ipv6'
-            if is_v4(module.params['source']):
-                v_type = 'ipv4'
-            commands.append('{0}sntp source {1} address {2}'.format(
-                state_prefix, v_type, module.params['source']))
-        else:
-            warnings.append('Invalid ip format')
+    config = module.params['config']
+    if config:
+        config = config[0]
+        if config['source'] != None:
+            if validate_ip(config['source']):
+                v_type = 'ipv6'
+                if is_v4(config['source']):
+                    v_type = 'ipv4'
+                commands.append('{0}sntp source {1} address {2}'.format(
+                    state_prefix, v_type, config['source']))
+            else:
+                warnings.append('Invalid ip format')
 
-    if module.params['min_poll'] != None:
-        commands.append(
-            '{0}sntp min-poll {1}'.format(state_prefix, module.params['min_poll']))
+        if config['min_poll'] != None:
+            commands.append(
+                '{0}sntp min-poll {1}'.format(state_prefix, config['min_poll']))
 
-    if module.params['max_poll'] != None:
-        commands.append(
-            '{0}sntp max-poll {1}'.format(state_prefix, module.params['max_poll']))
+        if config['max_poll'] != None:
+            commands.append(
+                '{0}sntp max-poll {1}'.format(state_prefix, config['max_poll']))
 
-    if module.params['key_id'] != None and module.params['auth_key'] != None:
-        commands.append('{0}sntp authentication-key {1} md5 {2}'.format(
-            state_prefix, module.params['key_id'], module.params['auth_key']))
-    elif module.params['auth_key'] != None:
-        warnings.append(
-            'To configure authentication key its necessary to provide key id')
-
-    if module.params['server'] != None:
-        if validate_ip(module.params['server']):
-            command = '{0}sntp server {1}'.format(
-                state_prefix, module.params['server'])
-            if module.params['key_id'] != None:
-                command += ' key {0}'.format(module.params['key_id'])
+        for auth_key in config['auth_key']:
+            command = '{0}sntp authentication-key {1}'.format(
+                state_prefix, auth_key['id'])
+            if auth_key['pass'] != None:
+                command += ' md5 {0}'.format(auth_key['pass'])
             commands.append(command)
-        else:
-            warnings.append('Invalid ip format')
 
-    if module.params['client'] != None:
-        prefix = '' if module.params['client'] is True else 'no '
-        commands.append('{0}sntp client'.format(prefix))
+        for server in config['server']:
+            if validate_ip(server['address']):
+                command = '{0}sntp server {1}'.format(
+                    state_prefix, server['address'])
+                if server['key_id'] != None:
+                    command += ' key {0}'.format(server['key_id'])
+                commands.append(command)
+            else:
+                warnings.append('Invalid ip format')
 
-    if module.params['auth'] != None:
-        prefix = '' if module.params['auth'] is True else 'no '
-        commands.append('{0}sntp authenticate'.format(prefix))
+        if config['client'] != None:
+            prefix = '' if config['client'] is True else 'no '
+            commands.append('{0}sntp client'.format(prefix))
+
+        if config['auth'] != None:
+            prefix = '' if config['auth'] is True else 'no '
+            commands.append('{0}sntp authenticate'.format(prefix))
 
     return commands
 
@@ -67,17 +70,31 @@ def main():
         filename=dict(),
         dir_path=dict(type='path')
     )
-    argument_spec = dict(
-        server=dict(type='str'),
-        source=dict(type='str'),
-        min_poll=dict(type='int', choices=range(3, 18)),
-        max_poll=dict(type='int', choices=range(3, 18)),
-        client=dict(type='bool'),
-        auth=dict(type='bool'),
-        auth_key=dict(type='str'),
-        key_id=dict(type='int'),
-        state=dict(choices=['absent', 'present'], default='present')
-    )
+    argument_spec = {'config': {'type': 'list',
+                                'elements': 'dict',
+                                'options': {'auth': {'type': 'bool'},
+                                            'auth_key': {'element': 'dict',
+                                                         'type': 'list',
+                                                         'options': {'id': {'type': 'int', 'required': True},
+                                                                     'pass': {'type': 'str'}
+                                                                     }
+                                                         },
+                                            'client': {'type': 'bool'},
+                                            'max_poll': {'type': 'int', 'choices': range(3, 18)},
+                                            'min_poll': {'type': 'int', 'choices': range(3, 18)},
+                                            'server': {'element': 'dict',
+                                                       'type': 'list',
+                                                       'options': {'address': {'type': 'str', 'required': True},
+                                                                   'key_id': {'type': 'int'}
+                                                                   }
+                                                       },
+                                            'source': {'type': 'str'}
+                                            }
+                                },
+                     'state': {'choices': ['absent', 'present'],
+                               'default': 'present',
+                               'type': 'str'}
+                     }
 
     argument_spec.update(dmos_argument_spec)
 

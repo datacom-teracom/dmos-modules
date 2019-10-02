@@ -14,6 +14,7 @@ from copy import deepcopy
 
 from ansible.module_utils.network.common import utils
 from ansible.module_utils.network.dmos.argspec.log.log import LogArgs
+from ansible.module_utils.network.dmos.utils.utils import get_arg_from_cmd_line
 
 
 class LogFacts(object):
@@ -42,40 +43,19 @@ class LogFacts(object):
         :rtype: dictionary
         :returns: facts
         """
-        if connection:  # just for linting purposes, remove
-            pass
-
         if not data:
-            # typically data is populated from the current device configuration
-            # data = connection.get('show running-config | section ^interface')
-            # using mock data instead
-            data = ("resource rsrc_a\n"
-                    "  a_bool true\n"
-                    "  a_string choice_a\n"
-                    "  resource here\n"
-                    "resource rscrc_b\n"
-                    "  key is property01 value is value end\n"
-                    "  an_int 10\n")
-
-        # split the config into instances of the resource
-        resource_delim = 'resource'
-        find_pattern = r'(?:^|\n)%s.*?(?=(?:^|\n)%s|$)' % (resource_delim,
-                                                           resource_delim)
-        resources = [p.strip() for p in re.findall(find_pattern,
-                                                   data,
-                                                   re.DOTALL)]
+            data = connection.get(
+                'show running-config log | details | nomore')
 
         objs = []
-        for resource in resources:
-            if resource:
-                obj = self.render_config(self.generated_spec, resource)
-                if obj:
-                    objs.append(obj)
+        obj = self.render_config(self.generated_spec, data)
+        if obj:
+            objs.append(obj)
 
-        ansible_facts['ansible_network_resources'].pop('log', None)
         facts = {}
         if objs:
-            params = utils.validate_config(self.argument_spec, {'config': objs})
+            params = utils.validate_config(
+                self.argument_spec, {'config': objs})
             facts['log'] = params['config']
 
         ansible_facts['ansible_network_resources'].update(facts)
@@ -92,24 +72,14 @@ class LogFacts(object):
         :returns: The generated config
         """
         config = deepcopy(spec)
-        config['name'] = utils.parse_conf_arg(conf, 'resource')
-        config['some_string'] = utils.parse_conf_arg(conf, 'a_string')
+        for line in conf.split('\n'):
+            if 'severity' in line:
+                config['severity'] = get_arg_from_cmd_line(
+                    line, 'severity')
+                continue
+            if 'syslog' in line:
+                config['syslog'] = get_arg_from_cmd_line(
+                    line, 'syslog')
+                continue
 
-        match = re.match(r'.*key is property01 (\S+)',
-                         conf, re.MULTILINE | re.DOTALL)
-        if match:
-            config['some_dict']['property_01'] = match.groups()[0]
-
-        a_bool = utils.parse_conf_arg(conf, 'a_bool')
-        if a_bool == 'true':
-            config['some_bool'] = True
-        elif a_bool == 'false':
-            config['some_bool'] = False
-        else:
-            config['some_bool'] = None
-
-        try:
-            config['some_int'] = int(utils.parse_conf_arg(conf, 'an_int'))
-        except TypeError:
-            config['some_int'] = None
         return utils.remove_empties(config)

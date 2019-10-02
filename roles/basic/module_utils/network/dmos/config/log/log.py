@@ -13,6 +13,7 @@ created
 from ansible.module_utils.network.common.cfg.base import ConfigBase
 from ansible.module_utils.network.common.utils import to_list
 from ansible.module_utils.network.dmos.facts.facts import Facts
+from ansible.module_utils.network.dmos.utils.utils import dict_to_set
 
 
 class Log(ConfigBase):
@@ -38,7 +39,8 @@ class Log(ConfigBase):
         :rtype: A dictionary
         :returns: The current configuration as a dictionary
         """
-        facts, _warnings = Facts(self._module).get_facts(self.gather_subset, self.gather_network_resources)
+        facts, _warnings = Facts(self._module).get_facts(
+            self.gather_subset, self.gather_network_resources)
         log_facts = facts['ansible_network_resources'].get('log')
         if not log_facts:
             return []
@@ -57,9 +59,10 @@ class Log(ConfigBase):
         existing_log_facts = self.get_log_facts()
         commands.extend(self.set_config(existing_log_facts))
         if commands:
-            if not self._module.check_mode:
-                self._connection.edit_config(commands)
-            result['changed'] = True
+        if not self._module.check_mode:
+            response = self._connection.edit_config(commands)
+            result['response'] = response['response']
+        result['changed'] = True
         result['commands'] = commands
 
         changed_log_facts = self.get_log_facts()
@@ -95,20 +98,16 @@ class Log(ConfigBase):
         """
         state = self._module.params['state']
         if state == 'overridden':
-            kwargs = {}
-            commands = self._state_overridden(**kwargs)
+            commands = self._state_overridden(want, have)
         elif state == 'deleted':
-            kwargs = {}
-            commands = self._state_deleted(**kwargs)
+            commands = self._state_deleted(want, have)
         elif state == 'merged':
-            kwargs = {}
-            commands = self._state_merged(**kwargs)
+            commands = self._state_merged(want, have)
         elif state == 'replaced':
-            kwargs = {}
-            commands = self._state_replaced(**kwargs)
+            commands = self._state_replaced(want, have)
         return commands
-    @staticmethod
-    def _state_replaced(**kwargs):
+
+    def _state_replaced(self, want, have):
         """ The command generator when state is replaced
 
         :rtype: A list
@@ -118,8 +117,7 @@ class Log(ConfigBase):
         commands = []
         return commands
 
-    @staticmethod
-    def _state_overridden(**kwargs):
+    def _state_overridden(self, want, have):
         """ The command generator when state is overridden
 
         :rtype: A list
@@ -129,8 +127,7 @@ class Log(ConfigBase):
         commands = []
         return commands
 
-    @staticmethod
-    def _state_merged(**kwargs):
+    def _state_merged(self, want, have):
         """ The command generator when state is merged
 
         :rtype: A list
@@ -138,10 +135,13 @@ class Log(ConfigBase):
                   the current configuration
         """
         commands = []
+        if want:
+            for config in want:
+                for each in have:
+                    commands.extend(self._set_config(config, each))
         return commands
 
-    @staticmethod
-    def _state_deleted(**kwargs):
+    def _state_deleted(self, want, have):
         """ The command generator when state is deleted
 
         :rtype: A list
@@ -149,4 +149,52 @@ class Log(ConfigBase):
                   of the provided objects
         """
         commands = []
+        if want:
+            for config in want:
+                for each in have:
+                    commands.extend(self._delete_config(config, each))
+        else:
+            want = dict()
+            for each in have:
+                commands.extend(self._delete_config(want, each))
+        return commands
+
+    def _set_config(self, want, have):
+        # Set the interface config based on the want and have config
+        commands = []
+
+        # Convert the want and have dict to set
+        want_dict = dict_to_set(want)
+        have_dict = dict_to_set(have)
+
+        diff = want_dict - have_dict
+
+        severity = dict(diff).get('severity')
+        if severity != None:
+            commands.append('log severity {0}'.format(severity))
+
+        syslog = dict(diff).get('syslog')
+        if syslog != None:
+            commands.append('log syslog {0}'.format(syslog))
+
+        return commands
+
+    def _delete_config(self, want, have):
+        # Set the interface config based on the want and have config
+        commands = []
+        count = 0
+
+        if want.get('syslog') != None:
+            count += 1
+            if have.get('syslog'):
+                commands.append('no log syslog')
+
+        if want.get('severity') != None:
+            count += 1
+            if have.get('severity'):
+                commands.append('no log severity')
+
+        if count == 0:
+            commands.append('no log')
+
         return commands

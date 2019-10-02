@@ -16,72 +16,7 @@ from ansible.plugins.cliconf import CliconfBase
 class Cliconf(CliconfBase):
 
     def get_config(self):
-        config_cmd = 'show running-config | details | display curly-braces | nomore'
-        out = self.send_command(config_cmd)
-
-        ret = out.split("\n")
-
-        cmds = []
-        while(len(ret)):
-            cmd = ""
-            discart_command = True
-            for i, word in enumerate(ret, 0):
-                cmd += word
-                if word == "":
-                    ret.pop(i)
-                    break
-
-                if ";" in word:
-                    ret.pop(i)
-                    discart_command = False
-                    break
-
-                if "}" in word:
-                    ret.pop(i)
-                    for j in range(i - 1, -1, -1):
-                        if "{" in ret[j]:
-                            ret.pop(j)
-                            break
-                    break
-
-            if not discart_command:
-                cmd = cmd.replace("{", "").replace(";", "").replace("}", "")
-                cmd = re.sub(' +', ' ', cmd)
-                cmds.append(cmd)
-
-        return cmds
-
-    def get_diff(self, candidates=None):
-        out = []
-        if candidates:
-            configs = self.get_config()
-
-            for candidate in candidates:
-                command = re.sub(' +', ' ', candidate)
-
-                its_no = False
-                if command.split()[0] == "no":
-                    its_no = True
-                    command = command.replace("no ", "")
-
-                contains = True
-                for config in configs:
-                    contains = True
-                    for word in command.split():
-                        if word not in config:
-                            contains = False
-                            break
-                    if contains:
-                        break
-
-                if contains:
-                    if its_no:
-                        out.append("no " + command)
-                else:
-                    if not its_no:
-                        out.append(command)
-
-        return out
+        return self.send_command('show running-config | details | nomore')
 
     def edit_config(self, candidates=None, commit=True, replace=None, comment=None):
         resp = {}
@@ -99,11 +34,13 @@ class Cliconf(CliconfBase):
 
                 cmd = line['command']
                 if cmd != 'end' and cmd[0] != '!':
-                    results.append(self.send_command(**line))
+                    response = self.send_command(**line)
+                    if response != '':
+                        results.append(response)
                     requests.append(cmd)
 
-            self.send_command('commit')
-            self.send_command('end')
+            results.append(self.send_command('commit'))
+            self.send_command('abort')
         else:
             raise ValueError('check mode is not supported')
 
@@ -130,23 +67,6 @@ class Cliconf(CliconfBase):
         match = re.search(r'Version (\S+)', data)
         if match:
             device_info['network_os_version'] = match.group(1).strip(',')
-
-        model_search_strs = [
-            r'^[Cc]isco (.+) \(revision', r'^[Cc]isco (\S+).+bytes of .*memory']
-        for item in model_search_strs:
-            match = re.search(item, data, re.M)
-            if match:
-                version = match.group(1).split(' ')
-                device_info['network_os_model'] = version[0]
-                break
-
-        match = re.search(r'^(.+) uptime', data, re.M)
-        if match:
-            device_info['network_os_hostname'] = match.group(1)
-
-        match = re.search(r'image file is "(.+)"', data)
-        if match:
-            device_info['network_os_image'] = match.group(1)
 
         return device_info
 
@@ -175,32 +95,6 @@ class Cliconf(CliconfBase):
 
     def get_capabilities(self):
         result = super(Cliconf, self).get_capabilities()
-        result['rpc'] += ['get_diff', 'run_commands']
         result['device_operations'] = self.get_device_operations()
         result.update(self.get_option_values())
         return json.dumps(result)
-
-    def run_commands(self, commands=None, check_rc=True):
-        if commands is None:
-            raise ValueError("'commands' value is required")
-
-        responses = list()
-        for cmd in to_list(commands):
-            if not isinstance(cmd, Mapping):
-                cmd = {'command': cmd}
-
-            output = cmd.pop('output', None)
-            if output:
-                raise ValueError(
-                    "'output' value %s is not supported for run_commands" % output)
-
-            try:
-                out = self.send_command(**cmd)
-            except AnsibleConnectionFailure as e:
-                if check_rc:
-                    raise
-                out = getattr(e, 'err', to_text(e))
-
-            responses.append(out)
-
-        return responses

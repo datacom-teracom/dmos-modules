@@ -1,8 +1,5 @@
-- name: show hostname
-  dmos_system:
-    hour: 13
-    minute: 27
-    second: 33
-    year: 2019
-    month: 9
-    day: 16
+- name: Configure logs
+  dmos_log:
+    config:
+      - syslog: 192.168.1.1
+        severity: alert

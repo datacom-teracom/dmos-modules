@@ -75,6 +75,24 @@ EXAMPLES = """
 - dmos_facts:
     gather_subset: min
     gather_network_resources: log
+
+# Collect only the sntp facts
+- dmos_facts:
+    gather_subset:
+      - !all
+      - !min
+    gather_network_resources:
+      - sntp
+
+# Do not collect sntp facts
+- dmos_facts:
+    gather_network_resources:
+      - "!sntp"
+
+# Collect sntp and minimal default facts
+- dmos_facts:
+    gather_subset: min
+    gather_network_resources: sntp
 """
 
 RETURN = """

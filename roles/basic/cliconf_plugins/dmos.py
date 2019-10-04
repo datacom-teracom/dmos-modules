@@ -16,7 +16,7 @@ from ansible.plugins.cliconf import CliconfBase
 class Cliconf(CliconfBase):
 
     def get_config(self):
-        return self.send_command('show running-config | details | nomore')
+        return self.send_command('show running-config | details | display curly-braces | nomore')
 
     def edit_config(self, candidates=None, commit=True, replace=None, comment=None):
         resp = {}
@@ -98,3 +98,28 @@ class Cliconf(CliconfBase):
         result['device_operations'] = self.get_device_operations()
         result.update(self.get_option_values())
         return json.dumps(result)
+
+    def run_commands(self, commands=None, check_rc=True):
+        if commands is None:
+            raise ValueError("'commands' value is required")
+
+        responses = list()
+        for cmd in to_list(commands):
+            if not isinstance(cmd, Mapping):
+                cmd = {'command': cmd}
+
+            output = cmd.pop('output', None)
+            if output:
+                raise ValueError(
+                    "'output' value %s is not supported for run_commands" % output)
+
+            try:
+                out = self.send_command(**cmd)
+            except AnsibleConnectionFailure as e:
+                if check_rc:
+                    raise
+                out = getattr(e, 'err', to_text(e))
+
+            responses.append(out)
+
+        return responses

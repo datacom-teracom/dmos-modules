@@ -59,10 +59,10 @@ class Log(ConfigBase):
         existing_log_facts = self.get_log_facts()
         commands.extend(self.set_config(existing_log_facts))
         if commands:
-        if not self._module.check_mode:
-            response = self._connection.edit_config(commands)
-            result['response'] = response['response']
-        result['changed'] = True
+            if not self._module.check_mode:
+                response = self._connection.edit_config(commands)
+                result['response'] = response['response']
+            result['changed'] = True
         result['commands'] = commands
 
         changed_log_facts = self.get_log_facts()
@@ -173,9 +173,10 @@ class Log(ConfigBase):
         if severity != None:
             commands.append('log severity {0}'.format(severity))
 
-        syslog = dict(diff).get('syslog')
-        if syslog != None:
-            commands.append('log syslog {0}'.format(syslog))
+        diff_syslog = dict(diff).get('syslog')
+        if diff_syslog != None:
+            for syslog in diff_syslog:
+                commands.append('log syslog {0}'.format(syslog))
 
         return commands
 
@@ -186,8 +187,12 @@ class Log(ConfigBase):
 
         if want.get('syslog') != None:
             count += 1
-            if have.get('syslog'):
-                commands.append('no log syslog')
+            want_syslog = want.get('syslog')
+            if want_syslog:
+                have_syslog = have.get('syslog')
+                for syslog in want_syslog:
+                    if syslog in have_syslog:
+                        commands.append('no log syslog {0}'.format(syslog))
 
         if want.get('severity') != None:
             count += 1

@@ -43,7 +43,7 @@ class LogArgs(object):  # pylint: disable=R0903
                                                  'notice',
                                                  'warning'],
                                      'type': 'str'},
-                        'syslog': {'type': 'str'}},
+                        'syslog': {'elements': 'str', 'type': 'list'}},
             'type': 'list'},
  'state': {'choices': ['merged', 'replaced', 'overridden', 'deleted'],
            'default': 'merged',

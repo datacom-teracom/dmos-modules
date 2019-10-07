@@ -72,14 +72,16 @@ class LogFacts(object):
         :returns: The generated config
         """
         config = deepcopy(spec)
+        syslog = []
         for line in conf.split('\n'):
             if 'severity' in line:
                 config['severity'] = get_arg_from_cmd_line(
                     line, 'severity')
                 continue
             if 'syslog' in line:
-                config['syslog'] = get_arg_from_cmd_line(
-                    line, 'syslog')
+                syslog.append(get_arg_from_cmd_line(
+                    line, 'syslog'))
                 continue
 
+        config['syslog'] = syslog
         return utils.remove_empties(config)

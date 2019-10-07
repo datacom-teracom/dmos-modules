@@ -93,6 +93,24 @@ EXAMPLES = """
 - dmos_facts:
     gather_subset: min
     gather_network_resources: sntp
+
+# Collect only the vlan facts
+- dmos_facts:
+    gather_subset:
+      - !all
+      - !min
+    gather_network_resources:
+      - vlan
+
+# Do not collect vlan facts
+- dmos_facts:
+    gather_network_resources:
+      - "!vlan"
+
+# Collect vlan and minimal default facts
+- dmos_facts:
+    gather_subset: min
+    gather_network_resources: vlan
 """
 
 RETURN = """

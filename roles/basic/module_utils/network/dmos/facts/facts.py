@@ -13,12 +13,14 @@ from ansible.module_utils.network.dmos.argspec.facts.facts import FactsArgs
 from ansible.module_utils.network.common.facts.facts import FactsBase
 from ansible.module_utils.network.dmos.facts.log.log import LogFacts
 from ansible.module_utils.network.dmos.facts.sntp.sntp import SntpFacts
+from ansible.module_utils.network.dmos.facts.vlan.vlan import VlanFacts
 
 
 FACT_LEGACY_SUBSETS = {}
 FACT_RESOURCE_SUBSETS = dict(
     log=LogFacts,
     sntp=SntpFacts,
+    vlan=VlanFacts,
 )
 
 

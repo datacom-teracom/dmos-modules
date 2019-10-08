@@ -42,15 +42,12 @@ def dict_to_set(sample_dict):
 def get_arg_from_cmd_line(line, key):
     if key in line:
         value = line.split(key)[-1]
+        if '"' in value:
+            quote_value = value.split('"')
+            return quote_value[1]
         return value.split()[0]
     return None
 
-
-def get_double_quote_arg_from_cmd_line(line, key):
-    if '"' in line:
-        value = line.split('"')
-        return value[1]
-    return None
 
 
 def get_vlan_id_list(vlan_id):

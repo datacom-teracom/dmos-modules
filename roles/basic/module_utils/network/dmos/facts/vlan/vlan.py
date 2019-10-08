@@ -15,7 +15,6 @@ from copy import deepcopy
 from ansible.module_utils.network.common import utils
 from ansible.module_utils.network.dmos.argspec.vlan.vlan import VlanArgs
 from ansible.module_utils.network.dmos.utils.utils import get_arg_from_cmd_line
-from ansible.module_utils.network.dmos.utils.utils import get_double_quote_arg_from_cmd_line
 from ansible.module_utils.network.dmos.utils.utils import get_vlan_id_list
 
 
@@ -97,9 +96,7 @@ class VlanFacts(object):
                     line, 'interface')
                 continue
             if 'name' in line:
-                config['name'] = get_double_quote_arg_from_cmd_line(
-                    line, 'name')
-                config['name'] = config['name'].replace('"', '')
+                config['name'] = get_arg_from_cmd_line(line, 'name')
                 continue
         if config['interface']['tagged'] == None:
             config['interface']['tagged'] = True

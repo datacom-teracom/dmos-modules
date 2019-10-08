@@ -15,6 +15,8 @@ from copy import deepcopy
 from ansible.module_utils.network.common import utils
 from ansible.module_utils.network.dmos.argspec.vlan.vlan import VlanArgs
 from ansible.module_utils.network.dmos.utils.utils import get_arg_from_cmd_line
+from ansible.module_utils.network.dmos.utils.utils import get_double_quote_arg_from_cmd_line
+from ansible.module_utils.network.dmos.utils.utils import get_vlan_id_list
 
 
 class VlanFacts(object):
@@ -47,14 +49,20 @@ class VlanFacts(object):
             data = connection.get(
                 'show running-config dot1q | details | nomore')
 
+        keys = re.findall("[^'\"]vlan\s.*[^'\"]\n", data)
+        values = re.compile("[^'\"]vlan\s.*[^'\"]\n").split(data)
+        values.remove('dot1q\n')
+
         objs = []
-        config = data.split('vlan ')
-        for conf in config:
-            if 'dot1q' in conf:
-                continue
-            obj = self.render_config(self.generated_spec, conf)
-            if obj:
-                objs.append(obj)
+        if len(keys) == len(values):
+            for i in range(len(keys)):
+                vlan_id = get_arg_from_cmd_line(keys[i], 'vlan')
+                vlan_id_list = get_vlan_id_list(vlan_id)
+                for id in vlan_id_list:
+                    obj = self.render_config(
+                        self.generated_spec, str(id) + "\n" + values[i])
+                    if obj:
+                        objs.append(obj)
 
         facts = {}
         if objs:
@@ -85,11 +93,13 @@ class VlanFacts(object):
                 config['interface']['tagged'] = False
                 continue
             if 'interface' in line:
-                config['interface']['name'] = get_arg_from_cmd_line(line, 'interface')
+                config['interface']['name'] = get_arg_from_cmd_line(
+                    line, 'interface')
                 continue
             if 'name' in line:
-                config['name'] = get_arg_from_cmd_line(line, 'name')
-                config['name'] = config['name'].replace("'",'')
+                config['name'] = get_double_quote_arg_from_cmd_line(
+                    line, 'name')
+                config['name'] = config['name'].replace('"', '')
                 continue
         if config['interface']['tagged'] == None:
             config['interface']['tagged'] = True

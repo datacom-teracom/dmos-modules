@@ -46,6 +46,22 @@ def get_arg_from_cmd_line(line, key):
     return None
 
 
+def get_double_quote_arg_from_cmd_line(line, key):
+    if '"' in line:
+        value = line.split('"')
+        return value[1]
+    return None
+
+
+def get_vlan_id_list(vlan_id):
+    if ',' in vlan_id:
+        return list(map(int, vlan_id.split(',')))
+    elif '-' in vlan_id:
+        vlan_range = vlan_id.split('-')
+        return range(int(vlan_range[0]), int(vlan_range[1]) + 1)
+    return [int(vlan_id)]
+
+
 def get_command_list_from_curly_braces(output):
     ret = output.split("\n")
 

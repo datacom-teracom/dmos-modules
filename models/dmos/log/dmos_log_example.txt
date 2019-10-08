@@ -1,0 +1,12 @@
+# Using Present
+
+<placeholder for the configuration example prior to module invocation>
+
+- name: Configure logs
+  dmos_log:
+    config:
+      - syslog: 192.168.1.1
+        severity: alert
+    state: merged
+
+<placeholder for the configuration example after module invocation>

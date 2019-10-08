@@ -1,0 +1,15 @@
+# Using Present
+
+<placeholder for the configuration example prior to module invocation>
+
+- name: Configure VLANs
+  dmos_vlan:
+    config:
+      - name: Vlan-example
+        vlan_id: 10
+        interface:
+          name: gigabit-ethernet-1/1/1
+          tagged: true
+    state: merged
+
+<placeholder for the configuration example after module invocation>

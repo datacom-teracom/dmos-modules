@@ -9,12 +9,11 @@ It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
-import re
+import json
 from copy import deepcopy
 
 from ansible.module_utils.network.common import utils
 from ansible.module_utils.network.dmos.argspec.log.log import LogArgs
-from ansible.module_utils.network.dmos.utils.utils import get_arg_from_cmd_line
 
 
 class LogFacts(object):
@@ -45,12 +44,18 @@ class LogFacts(object):
         """
         if not data:
             data = connection.get(
-                'show running-config log | details | nomore')
+                'show running-config log | details | nomore | display json')
+
+        data_dict = json.loads(data)['data']
+        data_dict['config'] = [
+            data_dict['dmos-base:config']['dmos-log-manager:log']]
+        del data_dict['dmos-base:config']
 
         objs = []
-        obj = self.render_config(self.generated_spec, data)
-        if obj:
-            objs.append(obj)
+        for each in data_dict['config']:
+            obj = self.render_config(self.generated_spec, each)
+            if obj:
+                objs.append(obj)
 
         facts = {}
         if objs:
@@ -72,16 +77,13 @@ class LogFacts(object):
         :returns: The generated config
         """
         config = deepcopy(spec)
-        syslog = []
-        for line in conf.split('\n'):
-            if 'severity' in line:
-                config['severity'] = get_arg_from_cmd_line(
-                    line, 'severity')
-                continue
-            if 'syslog' in line:
-                syslog.append(get_arg_from_cmd_line(
-                    line, 'syslog'))
-                continue
+        config['severity'] = conf.get('severity')
 
-        config['syslog'] = syslog
+        syslog_value = conf.get('syslog')
+        if syslog_value != None:
+            syslog = []
+            for each in syslog_value['host']:
+                syslog.append(each['address'])
+            config['syslog'] = syslog
+
         return utils.remove_empties(config)

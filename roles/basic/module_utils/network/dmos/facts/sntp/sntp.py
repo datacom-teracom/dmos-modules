@@ -9,12 +9,12 @@ It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
-import re
+import json
 from copy import deepcopy
 
 from ansible.module_utils.network.common import utils
 from ansible.module_utils.network.dmos.argspec.sntp.sntp import SntpArgs
-from ansible.module_utils.network.dmos.utils.utils import get_arg_from_cmd_line
+from ansible.module_utils.network.dmos.utils.utils import dict_has_key
 
 
 class SntpFacts(object):
@@ -45,12 +45,18 @@ class SntpFacts(object):
         """
         if not data:
             data = connection.get(
-                'show running-config sntp | details | nomore')
+                'show running-config sntp | details | nomore | display json')
+
+        data_dict = json.loads(data)['data']
+        data_dict['config'] = [
+            data_dict['dmos-base:config']['dmos-sntp-interface:sntp']]
+        del data_dict['dmos-base:config']
 
         objs = []
-        obj = self.render_config(self.generated_spec, data)
-        if obj:
-            objs.append(obj)
+        for each in data_dict['config']:
+            obj = self.render_config(self.generated_spec, each)
+            if obj:
+                objs.append(obj)
 
         facts = {}
         if objs:
@@ -72,50 +78,40 @@ class SntpFacts(object):
         :returns: The generated config
         """
         config = deepcopy(spec)
-        auth_key = []
-        server = []
-        for line in conf.split('\n'):
-            if 'sntp authenticate' in line:
-                config['auth'] = True
-                continue
-            if 'sntp authentication-key' in line:
+        config['auth'] = dict_has_key(conf, 'authenticate')
+
+        auth_key_value = conf.get('authentication-key')
+        if auth_key_value != None:
+            auth_key = []
+            for each in auth_key_value:
                 each_auth_key = dict()
-                each_auth_key['id'] = get_arg_from_cmd_line(
-                    line, 'authentication-key')
-                each_auth_key['pass'] = get_arg_from_cmd_line(line, 'md5')
+                each_auth_key['id'] = each.get('id')
+                each_auth_key['pass'] = each.get('md5')
                 auth_key.append(each_auth_key)
-                continue
-            if 'sntp client' in line:
-                config['client'] = True
-                continue
-            if 'sntp max-poll' in line:
-                config['max_poll'] = get_arg_from_cmd_line(line, 'max-poll')
-                continue
-            if 'sntp min-poll' in line:
-                config['min_poll'] = get_arg_from_cmd_line(line, 'min-poll')
-                continue
-            if 'sntp source' in line:
-                if 'ipv6 address' in line:
-                    config['source']['ipv6'] = get_arg_from_cmd_line(
-                        line, 'ipv6 address')
-                if 'ipv4 address' in line:
-                    config['source']['ipv4'] = get_arg_from_cmd_line(
-                        line, 'ipv4 address')
-                continue
-            if 'sntp server' in line:
+            config['auth_key'] = auth_key
+
+        config['client'] = dict_has_key(conf, 'client')
+
+        config['max_poll'] = conf.get('max-poll')
+        config['min_poll'] = conf.get('min-poll')
+
+        source_value = conf.get('source')
+        if source_value != None:
+            ipv4 = source_value.get('ipv4')
+            if ipv4 != None:
+                config['source']['ipv4'] = ipv4['address']['ip']
+            ipv6 = source_value.get('ipv6')
+            if ipv6 != None:
+                config['source']['ipv6'] = ipv6['address']['ip']
+
+        server_value = conf.get('server')
+        if server_value != None:
+            server = []
+            for each in server_value:
                 each_server = dict()
-                if 'server' in line:
-                    each_server['address'] = get_arg_from_cmd_line(
-                        line, 'server')
-                if 'key' in line:
-                    each_server['key_id'] = get_arg_from_cmd_line(line, 'key')
+                each_server['address'] = each.get('address')
+                each_server['key_id'] = each.get('key')
                 server.append(each_server)
-                continue
-        config['auth_key'] = auth_key
-        config['server'] = server
-        if not config['auth']:
-            config['auth'] = False
-        if not config['client']:
-            config['client'] = False
+            config['server'] = server
 
         return utils.remove_empties(config)

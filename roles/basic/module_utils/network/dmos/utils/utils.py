@@ -49,7 +49,6 @@ def get_arg_from_cmd_line(line, key):
     return None
 
 
-
 def get_vlan_id_list(vlan_id):
     if ',' in vlan_id:
         return list(map(int, vlan_id.split(',')))
@@ -57,6 +56,10 @@ def get_vlan_id_list(vlan_id):
         vlan_range = vlan_id.split('-')
         return range(int(vlan_range[0]), int(vlan_range[1]) + 1)
     return [int(vlan_id)]
+
+
+def dict_has_key(dict, key):
+    return True if key in dict else False
 
 
 def get_command_list_from_curly_braces(output):

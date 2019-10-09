@@ -164,58 +164,84 @@ class Sntp(ConfigBase):
         commands = []
 
         # Convert the want and have dict to set
-        want_dict = dict_to_set(want)
-        have_dict = dict_to_set(have)
+        want_set = dict_to_set(want)
+        have_set = dict_to_set(have)
+        diff = want_set - have_set
 
-        diff = want_dict - have_dict
+        want_dict = dict(want_set)
+        have_dict = dict(have_set)
+        diff_dict = dict(diff)
 
-        auth = dict(diff).get('auth')
+        auth = diff_dict.get('auth')
         if auth != None:
             commands.append(
                 '{0} sntp authenticate'.format('' if auth else 'no'))
 
-        auth_key = dict(diff).get('auth_key')
-        if auth_key != None:
-            for each in auth_key:
-                auth_key_dict = dict(each)
-                if auth_key_dict.get('id'):
-                    cmd = 'sntp authentication-key {0}'.format(auth_key_dict['id'])
-                    if auth_key_dict.get('pass'):
-                        cmd += ' md5 {0}'.format(auth_key_dict['pass'])
-                    commands.append(cmd)
+        if want.get('auth_key') != None:
+            if have.get('auth_key') != None:
+                auth_key = tuple(set(want_dict.get('auth_key')) -
+                                 set(have_dict.get('auth_key')))
+            else:
+                auth_key = diff_dict.get('auth_key')
 
-        client = dict(diff).get('client')
+            if auth_key != None:
+                for each in auth_key:
+                    each = dict(each)
+                    id_value = each.get('id')
+                    if id_value != None:
+                        cmd = 'sntp authentication-key {0}'.format(id_value)
+                        pass_value = each.get('pass')
+                        if pass_value != None:
+                            cmd += ' key {0}'.format(pass_value)
+                        commands.append(cmd)
+
+        client = diff_dict.get('client')
         if client != None:
             commands.append('{0} sntp client'.format('' if client else 'no'))
 
-        max_poll = dict(diff).get('max_poll')
+        max_poll = diff_dict.get('max_poll')
         if max_poll != None:
             commands.append('sntp max-poll {0}'.format(max_poll))
 
-        min_poll = dict(diff).get('min_poll')
+        min_poll = diff_dict.get('min_poll')
         if min_poll != None:
             commands.append('sntp min-poll {0}'.format(min_poll))
 
-        server = dict(diff).get('server')
-        if server != None:
-            for each in server:
-                server_dict = dict(each)
-                if server_dict.get('address'):
-                    cmd = 'sntp server {0}'.format(server_dict['address'])
-                    if server_dict.get('key_id'):
-                        cmd += ' key {0}'.format(server_dict['key_id'])
-                    commands.append(cmd)
+        if want.get('server') != None:
+            if have.get('server') != None:
+                server = tuple(set(want_dict.get('server')) -
+                               set(have_dict.get('server')))
+            else:
+                server = diff_dict.get('server')
 
-        source = dict(diff).get('source')
-        if source != None:
-            for each in source:
-                source_dict = dict([each])
-                if source_dict.get('ipv4'):
+            if server != None:
+                for each in server:
+                    each = dict(each)
+                    address = each.get('address')
+                    if address != None:
+                        cmd = 'sntp server {0}'.format(address)
+                        key_id = each.get('key_id')
+                        if key_id != None:
+                            cmd += ' key {0}'.format(key_id)
+                        commands.append(cmd)
+
+        if want.get('source') != None:
+            if have.get('source') != None:
+                source = tuple(set(want_dict.get('source')) -
+                               set(have_dict.get('source')))
+            else:
+                source = diff_dict.get('source')
+
+            if source != None:
+                source = dict(source)
+                ipv4 = source.get('ipv4')
+                if ipv4 != None:
                     commands.append(
-                        'sntp source ipv4 address {0}'.format(source_dict['ipv4']))
-                if source_dict.get('ipv6'):
+                        'sntp source ipv4 address {0}'.format(ipv4))
+                ipv6 = source.get('ipv6')
+                if ipv6 != None:
                     commands.append(
-                        'sntp source ipv6 address {0}'.format(source_dict['ipv6']))
+                        'sntp source ipv6 address {0}'.format(ipv6))
 
         return commands
 

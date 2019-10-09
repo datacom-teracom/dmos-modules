@@ -164,19 +164,28 @@ class Log(ConfigBase):
         commands = []
 
         # Convert the want and have dict to set
-        want_dict = dict_to_set(want)
-        have_dict = dict_to_set(have)
+        want_set = dict_to_set(want)
+        have_set = dict_to_set(have)
+        diff = want_set - have_set
 
-        diff = want_dict - have_dict
+        want_dict = dict(want_set)
+        have_dict = dict(have_set)
+        diff_dict = dict(diff)
 
-        severity = dict(diff).get('severity')
+        severity = diff_dict.get('severity')
         if severity != None:
             commands.append('log severity {0}'.format(severity))
 
-        diff_syslog = dict(diff).get('syslog')
-        if diff_syslog != None:
-            for syslog in diff_syslog:
-                commands.append('log syslog {0}'.format(syslog))
+        if want.get('syslog') != None:
+            if have.get('syslog') != None:
+                syslog = tuple(set(want_dict.get('syslog')) -
+                               set(have_dict.get('syslog')))
+            else:
+                syslog = diff_dict.get('syslog')
+
+            if syslog != None:
+                for each in syslog:
+                    commands.append('log syslog {0}'.format(each))
 
         return commands
 

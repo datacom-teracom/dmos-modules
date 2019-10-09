@@ -9,7 +9,7 @@ It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
-import re
+import json
 from copy import deepcopy
 
 from ansible.module_utils.network.common import utils
@@ -46,22 +46,16 @@ class VlanFacts(object):
         """
         if not data:
             data = connection.get(
-                'show running-config dot1q | details | nomore')
+                'show running-config dot1q | details | nomore | display json')
 
-        keys = re.findall("[^'\"]vlan\s.*[^'\"]\n", data)
-        values = re.compile("[^'\"]vlan\s.*[^'\"]\n").split(data)
-        values.remove('dot1q\n')
+        data_dict = json.loads(data)['data']
+        data_list = data_dict['vlan-manager:dot1q']['vlan']
 
         objs = []
-        if len(keys) == len(values):
-            for i in range(len(keys)):
-                vlan_id = get_arg_from_cmd_line(keys[i], 'vlan')
-                vlan_id_list = get_vlan_id_list(vlan_id)
-                for id in vlan_id_list:
-                    obj = self.render_config(
-                        self.generated_spec, str(id) + "\n" + values[i])
-                    if obj:
-                        objs.append(obj)
+        for each in data_list:
+            obj = self.render_config(self.generated_spec, each)
+            if obj:
+                objs.append(obj)
 
         facts = {}
         if objs:
@@ -83,22 +77,19 @@ class VlanFacts(object):
         :returns: The generated config
         """
         config = deepcopy(spec)
-        got_id = False
-        for line in conf.split('\n'):
-            if not got_id:
-                config['vlan_id'] = int(line)
-                got_id = True
-            if 'untagged' in line:
-                config['interface']['tagged'] = False
-                continue
-            if 'interface' in line:
-                config['interface']['name'] = get_arg_from_cmd_line(
-                    line, 'interface')
-                continue
-            if 'name' in line:
-                config['name'] = get_arg_from_cmd_line(line, 'name')
-                continue
-        if config['interface']['tagged'] == None:
-            config['interface']['tagged'] = True
+        config['vlan_id'] = conf.get('vlan-id')
+        config['name'] = conf.get('name')
+
+        interface_value = conf.get('interface')
+        if interface_value != None:
+            interface = []
+            for each in interface_value:
+                each_interface = dict()
+                each_interface['name'] = each.get('interface-name')
+                tagged = each.get('tagged-untagged')
+                if tagged != None:
+                    each_interface['tagged'] = True if tagged == 'tagged' else False
+                interface.append(each_interface)
+            config['interface'] = interface
 
         return utils.remove_empties(config)

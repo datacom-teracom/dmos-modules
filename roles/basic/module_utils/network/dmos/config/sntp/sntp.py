@@ -137,8 +137,11 @@ class Sntp(ConfigBase):
         commands = []
         if want:
             for config in want:
-                for each in have:
-                    commands.extend(self._set_config(config, each))
+                if have:
+                    for each in have:
+                        commands.extend(self._set_config(config, each))
+                else:
+                    commands.extend(self._set_config(config, dict()))
         return commands
 
     def _state_deleted(self, want, have):
@@ -154,9 +157,7 @@ class Sntp(ConfigBase):
                 for each in have:
                     commands.extend(self._delete_config(config, each))
         else:
-            want = dict()
-            for each in have:
-                commands.extend(self._delete_config(want, each))
+            commands.extend(self._delete_config(dict(), dict()))
         return commands
 
     def _set_config(self, want, have):
@@ -192,7 +193,7 @@ class Sntp(ConfigBase):
                         cmd = 'sntp authentication-key {0}'.format(id_value)
                         pass_value = each.get('pass')
                         if pass_value != None:
-                            cmd += ' key {0}'.format(pass_value)
+                            cmd += ' md5 {0}'.format(pass_value)
                         commands.append(cmd)
 
         client = diff_dict.get('client')

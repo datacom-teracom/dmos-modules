@@ -137,8 +137,11 @@ class Log(ConfigBase):
         commands = []
         if want:
             for config in want:
-                for each in have:
-                    commands.extend(self._set_config(config, each))
+                if have:
+                    for each in have:
+                        commands.extend(self._set_config(config, each))
+                else:
+                    commands.extend(self._set_config(config, dict()))
         return commands
 
     def _state_deleted(self, want, have):
@@ -154,9 +157,7 @@ class Log(ConfigBase):
                 for each in have:
                     commands.extend(self._delete_config(config, each))
         else:
-            want = dict()
-            for each in have:
-                commands.extend(self._delete_config(want, each))
+            commands.extend(self._delete_config(dict(), dict()))
         return commands
 
     def _set_config(self, want, have):

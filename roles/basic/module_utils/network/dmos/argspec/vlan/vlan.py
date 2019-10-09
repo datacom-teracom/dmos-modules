@@ -35,9 +35,10 @@ class VlanArgs(object):  # pylint: disable=R0903
         pass
 
     argument_spec = {'config': {'elements': 'dict',
-            'options': {'interface': {'options': {'name': {'type': 'str'},
+            'options': {'interface': {'elements': 'dict',
+                                      'options': {'name': {'type': 'str'},
                                                   'tagged': {'type': 'bool'}},
-                                      'type': 'dict'},
+                                      'type': 'list'},
                         'name': {'type': 'str'},
                         'vlan_id': {'type': 'int'}},
             'type': 'list'},

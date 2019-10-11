@@ -111,6 +111,24 @@ EXAMPLES = """
 - dmos_facts:
     gather_subset: min
     gather_network_resources: vlan
+
+# Collect only the linkagg facts
+- dmos_facts:
+    gather_subset:
+      - !all
+      - !min
+    gather_network_resources:
+      - linkagg
+
+# Do not collect linkagg facts
+- dmos_facts:
+    gather_network_resources:
+      - "!linkagg"
+
+# Collect linkagg and minimal default facts
+- dmos_facts:
+    gather_subset: min
+    gather_network_resources: linkagg
 """
 
 RETURN = """

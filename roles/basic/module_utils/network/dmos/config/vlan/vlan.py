@@ -179,7 +179,7 @@ class Vlan(ConfigBase):
         if want.get('interface') != None:
             if have.get('interface') != None:
                 interface = tuple(set(want_dict.get('interface')) -
-                                 set(have_dict.get('interface')))
+                                  set(have_dict.get('interface')))
             else:
                 interface = diff_dict.get('interface')
 
@@ -188,7 +188,8 @@ class Vlan(ConfigBase):
                     each = dict(each)
                     intf_name = each.get('name')
                     if intf_name != None:
-                        cmd = 'dot1q vlan {0} interface {1}'.format(want.get('vlan_id'), intf_name)
+                        cmd = 'dot1q vlan {0} interface {1}'.format(
+                            want.get('vlan_id'), intf_name)
                         tagged = each.get('tagged')
                         if tagged != None:
                             cmd += ' tagged' if tagged else ' untagged'
@@ -201,18 +202,18 @@ class Vlan(ConfigBase):
         commands = []
 
         if want.get('vlan_id') != None:
-            if have.get('vlan_id'):
+            if have.get('vlan_id') != None:
                 count = 0
 
                 if want.get('name') != None:
                     count += 1
-                    if have.get('name'):
+                    if have.get('name') != None:
                         commands.append(
                             'no dot1q vlan {0} name'.format(want.get('vlan_id')))
 
                 if want.get('interface') != None:
                     count += 1
-                    if have.get('interface'):
+                    if have.get('interface') != None:
                         if want.get('interface')['name'] != None:
                             cmd = 'no dot1q vlan {0} interface {1}'.format(
                                 want.get('vlan_id'), want.get('interface')['name'])

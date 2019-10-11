@@ -252,50 +252,51 @@ class Sntp(ConfigBase):
 
         if want.get('auth') != None:
             count += 1
-            if have.get('auth'):
+            if have.get('auth') != None:
                 commands.append('no sntp authenticate')
 
         if want.get('auth_key') != None:
+            count += 1
             for auth_key in want.get('auth_key'):
-                count += 1
-                for each in have.get('auth_key'):
-                    if each.get('id') and each.get('id') == auth_key.get('id'):
-                        commands.append(
-                            'no sntp authentication-key {0}'.format(auth_key.get('id')))
+                if have.get('auth_key') != None:
+                    for each in have.get('auth_key'):
+                        if each.get('id') and each.get('id') == auth_key.get('id'):
+                            commands.append(
+                                'no sntp authentication-key {0}'.format(auth_key.get('id')))
 
         if want.get('client') != None:
             count += 1
-            if have.get('client'):
+            if have.get('client') != None:
                 commands.append('no sntp client')
 
         if want.get('max_poll') != None:
             count += 1
-            if have.get('max_poll'):
+            if have.get('max_poll') != None:
                 commands.append('no sntp max-poll')
 
         if want.get('min_poll') != None:
             count += 1
-            if have.get('min_poll'):
+            if have.get('min_poll') != None:
                 commands.append('no sntp min-poll')
 
         if want.get('server') != None:
+            count += 1
             for server in want.get('server'):
-                count += 1
-                for each in have.get('server'):
-                    if each.get('address') and each.get('address') == server.get('address'):
-                        cmd = 'no sntp server {0}'.format(
-                            server.get('address'))
-                        if each.get('key_id') and server.get('key_id'):
-                            cmd += ' key'
-                        commands.append(cmd)
+                if have.get('server') != None:
+                    for each in have.get('server'):
+                        if each.get('address') and each.get('address') == server.get('address'):
+                            cmd = 'no sntp server {0}'.format(
+                                server.get('address'))
+                            if each.get('key_id') and server.get('key_id'):
+                                cmd += ' key'
+                            commands.append(cmd)
 
         if want.get('source') != None:
-            for source in want.get('source'):
-                count += 1
-                if 'ipv4' in source:
-                    commands.append('no sntp server ipv4')
-                if 'ipv6' in source:
-                    commands.append('no sntp server ipv6')
+            if have.get('source') != None:
+                if want.get('source').get('ipv4') != None and have.get('source').get('ipv4') != None:
+                    commands.append('no sntp source ipv4')
+                if want.get('source').get('ipv6') != None and have.get('source').get('ipv6') != None:
+                    commands.append('no sntp source ipv6')
 
         if count == 0:
             commands.append('no sntp')

@@ -46,14 +46,17 @@ class LogFacts(object):
             data = connection.get(
                 'show running-config log | details | nomore | display json')
 
-        data_dict = json.loads(data)['data']
-        data_list = [data_dict['dmos-base:config']['dmos-log-manager:log']]
-
         objs = []
-        for each in data_list:
-            obj = self.render_config(self.generated_spec, each)
-            if obj:
-                objs.append(obj)
+        try:
+            data_dict = json.loads(data)['data']
+            data_list = [data_dict['dmos-base:config']['dmos-log-manager:log']]
+        except:
+            pass
+        else:
+            for each in data_list:
+                obj = self.render_config(self.generated_spec, each)
+                if obj:
+                    objs.append(obj)
 
         facts = {}
         if objs:

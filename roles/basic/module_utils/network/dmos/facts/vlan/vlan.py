@@ -48,14 +48,17 @@ class VlanFacts(object):
             data = connection.get(
                 'show running-config dot1q | details | nomore | display json')
 
-        data_dict = json.loads(data)['data']
-        data_list = data_dict['vlan-manager:dot1q']['vlan']
-
         objs = []
-        for each in data_list:
-            obj = self.render_config(self.generated_spec, each)
-            if obj:
-                objs.append(obj)
+        try:
+            data_dict = json.loads(data)['data']
+            data_list = data_dict['vlan-manager:dot1q']['vlan']
+        except:
+            pass
+        else:
+            for each in data_list:
+                obj = self.render_config(self.generated_spec, each)
+                if obj:
+                    objs.append(obj)
 
         facts = {}
         if objs:

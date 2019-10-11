@@ -197,16 +197,14 @@ class Log(ConfigBase):
 
         if want.get('syslog') != None:
             count += 1
-            want_syslog = want.get('syslog')
-            if want_syslog:
-                have_syslog = have.get('syslog')
-                for syslog in want_syslog:
-                    if syslog in have_syslog:
+            if have.get('syslog') != None:
+                for syslog in want.get('syslog'):
+                    if syslog in have.get('syslog'):
                         commands.append('no log syslog {0}'.format(syslog))
 
         if want.get('severity') != None:
             count += 1
-            if have.get('severity'):
+            if have.get('severity') != None:
                 commands.append('no log severity')
 
         if count == 0:

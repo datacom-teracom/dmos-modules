@@ -20,6 +20,7 @@ class FactsArgs(object):  # pylint: disable=R0903
         'log',
         'sntp',
         'vlan',
+        'linkagg',
     ]
 
     argument_spec = {

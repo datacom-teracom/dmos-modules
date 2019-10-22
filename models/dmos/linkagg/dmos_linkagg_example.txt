@@ -1,0 +1,34 @@
+# Using Present
+
+<placeholder for the configuration example prior to module invocation>
+
+- name: Configure linkagg
+  dmos_linkagg:
+    config:
+      - lag:
+        - lag_id: 1
+          admin_status: up
+          load_balance: dynamic
+          interface:
+            - name: gigabit-ethernet-1/1/1
+              port_prio: 12
+            - name: gigabit-ethernet-1/1/3
+              port_prio: 15
+          max_active: 4
+          min_active: 3
+          mode: active
+          period: long
+        - lag_id: 2
+          admin_status: down
+          load_balance: enhanced
+          interface:
+            - name: gigabit-ethernet-1/1/2
+              port_prio: 113
+            - name: gigabit-ethernet-1/1/5
+          max_active: 2
+          min_active: 1
+          mode: passive
+          period: short
+        sys_prio: 400
+
+<placeholder for the configuration example after module invocation>

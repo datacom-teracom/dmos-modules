@@ -14,7 +14,7 @@ from ansible.module_utils.network.common.cfg.base import ConfigBase
 from ansible.module_utils.network.common.utils import to_list
 from ansible.module_utils.network.dmos.facts.facts import Facts
 from ansible.module_utils.network.dmos.utils.utils import dict_to_set
-from copy import deepcopy
+from ansible.module_utils.network.dmos.utils.dict_differ import DictDiffer
 
 
 class Linkagg(ConfigBase):
@@ -63,6 +63,8 @@ class Linkagg(ConfigBase):
             if not self._module.check_mode:
                 response = self._connection.edit_config(commands)
                 result['response'] = response['response']
+                if response.get('error'):
+                    self._module.fail_json(msg=response['error'])
             result['changed'] = True
         result['commands'] = commands
 
@@ -137,12 +139,10 @@ class Linkagg(ConfigBase):
         """
         commands = []
         if want:
-            for config in want:
-                if have:
-                    for each in have:
-                        commands.extend(self._set_config(config, each))
-                else:
-                    commands.extend(self._set_config(config, dict()))
+            if have:
+                commands.extend(self._set_config(want[0], have[0]))
+            else:
+                commands.extend(self._set_config(want[0], dict()))
         return commands
 
     def _state_deleted(self, want, have):
@@ -155,8 +155,9 @@ class Linkagg(ConfigBase):
         commands = []
         if want:
             for config in want:
-                for each in have:
-                    commands.extend(self._delete_config(config, each))
+                if have:
+                    for each in have:
+                        commands.extend(self._delete_config(config, each))
         else:
             commands.extend(self._delete_config(dict(), dict()))
         return commands
@@ -165,103 +166,25 @@ class Linkagg(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        want_copy = deepcopy(want)
-        have_copy = deepcopy(have)
+        differ = DictDiffer(have, want, {'lag_id': 0, 'name': 1})
+        dict_diff = differ.deepdiff()
 
-        want_lag_dict = want_copy.pop('lag')
-        have_lag_dict = have_copy.pop('lag')
-
-        commands.extend(self._get_sys_prio_commands(want_copy, have_copy))
-        commands.extend(self._set_lag_config(want_lag_dict, have_lag_dict))
-
-        return commands
-
-    def _set_lag_config(self, want, have):
-        commands = []
-
-        if want:
-            for each_want_lag in want:
-                if have:
-                    present = False
-                    for each_have_lag in have:
-                        if each_want_lag.get('lag_id') != None and each_have_lag.get('lag_id') != None:
-                            if each_want_lag.get('lag_id') == each_have_lag.get('lag_id'):
-                                present = True
-                                want_interface_dict = each_want_lag.pop(
-                                    'interface')
-                                have_interface_dict = each_have_lag.pop(
-                                    'interface')
-
-                                commands.extend(self._get_lag_commands(
-                                    each_want_lag, each_have_lag))
-                                commands.extend(self._set_interface_config(
-                                    want_interface_dict, have_interface_dict, each_want_lag.get('lag_id')))
-                    if not present:
-                        want_interface_dict = each_want_lag.pop('interface')
-                        commands.extend(self._get_lag_commands(
-                            each_want_lag, dict()))
-                        commands.extend(self._set_interface_config(
-                            want_interface_dict, dict(), each_want_lag.get('lag_id')))
-                else:
-                    want_interface_dict = each_want_lag.pop('interface')
-                    commands.extend(self._get_lag_commands(
-                        each_want_lag, dict()))
-                    commands.extend(self._set_interface_config(
-                        want_interface_dict, dict(), each_want_lag.get('lag_id')))
-
-        return commands
-
-    def _set_interface_config(self, want, have, lag_id):
-        commands = []
-
-        if want:
-            for each_want_interface in want:
-                if have:
-                    present = False
-                    for each_have_interface in have:
-                        if each_want_interface.get('name') != None and each_have_interface.get('name') != None:
-                            if each_want_interface.get('name') == each_have_interface.get('name'):
-                                present = True
-                                commands.extend(self._get_interface_commands(
-                                    each_want_interface, each_have_interface, lag_id))
-                    if not present:
-                        commands.extend(self._get_interface_commands(
-                            each_want_interface, dict(), lag_id))
-                else:
-                    commands.extend(self._get_interface_commands(
-                                    each_want_interface, dict(), lag_id))
-
-        return commands
-
-    def _get_sys_prio_commands(self, want, have):
-        # Convert the want and have dict to set
-        want_set = dict_to_set(want)
-        have_set = dict_to_set(have)
-        diff = want_set - have_set
-
-        want_dict = dict(want_set)
-        have_dict = dict(have_set)
-        diff_dict = dict(diff)
-
-        sys_prio = diff_dict.get('sys_prio')
+        sys_prio = dict_diff.get('sys_prio')
         if sys_prio != None:
-            return ['link-aggregation system-priority {0}'.format(sys_prio)]
+            commands.append(
+                'link-aggregation system-priority {0}'.format(sys_prio))
 
-        return []
+        lag = dict_diff.get('lag')
+        if lag != None:
+            for each_lag in lag:
+                commands.extend(self._get_lag_commands(each_lag))
 
-    def _get_lag_commands(self, want, have):
+        return commands
+
+    def _get_lag_commands(self, diff_dict):
         commands = []
 
-        # Convert the want and have dict to set
-        want_set = dict_to_set(want)
-        have_set = dict_to_set(have)
-        diff = want_set - have_set
-
-        want_dict = dict(want_set)
-        have_dict = dict(have_set)
-        diff_dict = dict(diff)
-
-        lag_id = want.get('lag_id')
+        lag_id = diff_dict.get('lag_id')
 
         admin_status = diff_dict.get('admin_status')
         if admin_status != None:
@@ -272,6 +195,12 @@ class Linkagg(ConfigBase):
         if description != None:
             commands.append(
                 'link-aggregation interface lag {0} description {1}'.format(lag_id, description))
+
+        interface = diff_dict.get('interface')
+        if interface != None:
+            for each_interface in interface:
+                commands.extend(self._get_interface_commands(
+                    each_interface, lag_id))
 
         load_balance = diff_dict.get('load_balance')
         if load_balance != None:
@@ -300,24 +229,16 @@ class Linkagg(ConfigBase):
 
         return commands
 
-    def _get_interface_commands(self, want, have, lag_id):
-        # Convert the want and have dict to set
-        want_set = dict_to_set(want)
-        have_set = dict_to_set(have)
-        diff = want_set - have_set
+    def _get_interface_commands(self, diff_dict, lag_id):
+        intf_name = diff_dict.get('name')
+        cmd = 'link-aggregation interface lag {0} interface {1}'.format(
+            lag_id, intf_name)
 
-        want_dict = dict(want_set)
-        have_dict = dict(have_set)
-        diff_dict = dict(diff)
-
-        intf_name = want.get('name')
-
-        port_prio = diff_dict.get(
-            'port_prio')
+        port_prio = diff_dict.get('port_prio')
         if port_prio != None:
-            return ['link-aggregation interface lag {0} interface {1} port-priority {2}'.format(lag_id, intf_name, port_prio)]
+            cmd += ' port-priority {0}'.format(port_prio)
 
-        return []
+        return [cmd]
 
     def _delete_config(self, want, have):
         commands = []
@@ -411,9 +332,9 @@ class Linkagg(ConfigBase):
     def _delete_interface_config(self, want, have, lag_id):
         commands = []
 
-        if want.get('name') != None
-        cmd = 'no link-aggregation interface lag {0} interface {1}'.format(lag_id
-                                                                           want.get('name'))
+        if want.get('name') != None:
+            cmd = 'no link-aggregation interface lag {0} interface {1}'.format(
+                lag_id, want.get('name'))
         else:
             return commands
 

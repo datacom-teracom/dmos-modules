@@ -14,6 +14,7 @@ from ansible.module_utils.network.common.cfg.base import ConfigBase
 from ansible.module_utils.network.common.utils import to_list
 from ansible.module_utils.network.dmos.facts.facts import Facts
 from ansible.module_utils.network.dmos.utils.utils import dict_to_set
+from ansible.module_utils.network.dmos.utils.dict_differ import DictDiffer
 
 
 class Vlan(ConfigBase):
@@ -62,6 +63,8 @@ class Vlan(ConfigBase):
             if not self._module.check_mode:
                 response = self._connection.edit_config(commands)
                 result['response'] = response['response']
+                if response.get('error'):
+                    self._module.fail_json(msg=response['error'])
             result['changed'] = True
         result['commands'] = commands
 
@@ -126,18 +129,10 @@ class Vlan(ConfigBase):
         """
         commands = []
         if want:
-            for config in want:
-                if have:
-                    present = False
-                    for each in have:
-                        if each['vlan_id'] == config['vlan_id']:
-                            present = True
-                            commands.extend(self._set_config(config, each))
-                            break
-                    if not present:
-                        commands.extend(self._set_config(config, dict()))
-                else:
-                    commands.extend(self._set_config(config, dict()))
+            if have:
+                commands.extend(self._set_config(want, have))
+            else:
+                commands.extend(self._set_config(want, []))
         return commands
 
     def _state_deleted(self, want, have):
@@ -150,10 +145,11 @@ class Vlan(ConfigBase):
         commands = []
         if want:
             for config in want:
-                for each in have:
-                    if each['vlan_id'] == config['vlan_id']:
-                        commands.extend(self._delete_config(config, each))
-                        break
+                if have:
+                    for each in have:
+                        if each['vlan_id'] == config['vlan_id']:
+                            commands.extend(self._delete_config(config, each))
+                            break
         else:
             commands.extend(self._delete_config(dict(), dict()))
         return commands
@@ -162,34 +158,24 @@ class Vlan(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        # Convert the want and have dict to set
-        want_set = dict_to_set(want)
-        have_set = dict_to_set(have)
-        diff = want_set - have_set
+        differ = DictDiffer(have, want, {'vlan_id': 0, 'name': 1})
 
-        want_dict = dict(want_set)
-        have_dict = dict(have_set)
-        diff_dict = dict(diff)
+        dict_diff = differ.deepdiff()
+        for diff in dict_diff:
+            vlan_id = diff.get('vlan_id')
+            name = diff.get('name')
+            if name != None:
+                commands.append('dot1q vlan {0} name {1}'.format(
+                    vlan_id, name))
 
-        name = diff_dict.get('name')
-        if name != None:
-            commands.append('dot1q vlan {0} name {1}'.format(
-                want.get('vlan_id'), name))
-
-        if want.get('interface') != None:
-            if have.get('interface') != None:
-                interface = tuple(set(want_dict.get('interface')) -
-                                  set(have_dict.get('interface')))
-            else:
-                interface = diff_dict.get('interface')
-
+            interface = diff.get('interface')
             if interface != None:
                 for each in interface:
                     each = dict(each)
                     intf_name = each.get('name')
                     if intf_name != None:
                         cmd = 'dot1q vlan {0} interface {1}'.format(
-                            want.get('vlan_id'), intf_name)
+                            vlan_id, intf_name)
                         tagged = each.get('tagged')
                         if tagged != None:
                             cmd += ' tagged' if tagged else ' untagged'

@@ -39,8 +39,12 @@ class Cliconf(CliconfBase):
                         results.append(response)
                     requests.append(cmd)
 
-            results.append(self.send_command('commit'))
-            self.send_command('abort')
+            commit_msg = self.send_command('commit')
+            if commit_msg != 'Commit complete.' and commit_msg != '% No modifications to commit.':
+                resp['error'] = commit_msg
+                self.send_command('abort')
+            else:
+                self.send_command('end')
         else:
             raise ValueError('check mode is not supported')
 

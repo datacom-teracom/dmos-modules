@@ -3,14 +3,33 @@ from copy import deepcopy
 
 
 class DictDiffer():
-    def __init__(self, base, comparable, config_keys):
-        self._base = deepcopy(base)
-        self._comparable = deepcopy(comparable)
+    _AUXILIARY_KEY = 'AUXILIARY_KEY'
+
+    def __init__(self, base, comparable, config_keys={}):
+        if isinstance(base, list) and isinstance(comparable, list):
+            self._is_list = True
+            self._base = deepcopy(self._add_aux_key(base))
+            self._comparable = deepcopy(self._add_aux_key(comparable))
+        elif isinstance(base, dict) and isinstance(comparable, dict):
+            self._is_list = False
+            self._base = deepcopy(base)
+            self._comparable = deepcopy(comparable)
+        else:
+            raise AssertionError(
+                "invalid or incompatible types of base and comparable")
+
         self._config_keys = config_keys
 
+    def _add_aux_key(self, raw_list):
+        list_dict = dict()
+        list_dict[self._AUXILIARY_KEY] = raw_list if raw_list != None else []
+        return list_dict
+
+    def _del_aux_key(self, raw_dict):
+        aux_key = raw_dict.get(self._AUXILIARY_KEY)
+        return aux_key if aux_key != None else []
+
     def _transform(self, config, level=0):
-        if not isinstance(config, dict):
-            raise AssertionError("`config` must be of type <dict>")
         if isinstance(config, dict):
             for key, value in iteritems(config):
                 aux = {}
@@ -79,8 +98,14 @@ class DictDiffer():
                     self._untransform(value)
 
     def deepdiff(self):
+        if not self._comparable:
+            return {}
+        if not self._base:
+            return self._comparable
         self._transform(self._base)
         self._transform(self._comparable)
         diff = self._dict_diff(self._base, self._comparable)
         self._untransform(diff)
+        if self._is_list:
+            return self._del_aux_key(diff)
         return diff

@@ -14,6 +14,7 @@ from ansible.module_utils.network.common.cfg.base import ConfigBase
 from ansible.module_utils.network.common.utils import to_list
 from ansible.module_utils.network.dmos.facts.facts import Facts
 from ansible.module_utils.network.dmos.utils.utils import dict_to_set
+from ansible.module_utils.network.dmos.utils.dict_differ import DictDiffer
 
 
 class Log(ConfigBase):
@@ -62,6 +63,8 @@ class Log(ConfigBase):
             if not self._module.check_mode:
                 response = self._connection.edit_config(commands)
                 result['response'] = response['response']
+                if response.get('error'):
+                    self._module.fail_json(msg=response['error'])
             result['changed'] = True
         result['commands'] = commands
 
@@ -136,12 +139,10 @@ class Log(ConfigBase):
         """
         commands = []
         if want:
-            for config in want:
-                if have:
-                    for each in have:
-                        commands.extend(self._set_config(config, each))
-                else:
-                    commands.extend(self._set_config(config, dict()))
+            if have:
+                commands.extend(self._set_config(want[0], have[0]))
+            else:
+                commands.extend(self._set_config(want[0], dict()))
         return commands
 
     def _state_deleted(self, want, have):
@@ -154,8 +155,9 @@ class Log(ConfigBase):
         commands = []
         if want:
             for config in want:
-                for each in have:
-                    commands.extend(self._delete_config(config, each))
+                if have:
+                    for each in have:
+                        commands.extend(self._delete_config(config, each))
         else:
             commands.extend(self._delete_config(dict(), dict()))
         return commands
@@ -164,29 +166,17 @@ class Log(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        # Convert the want and have dict to set
-        want_set = dict_to_set(want)
-        have_set = dict_to_set(have)
-        diff = want_set - have_set
+        differ = DictDiffer(have, want)
+        dict_diff = differ.deepdiff()
 
-        want_dict = dict(want_set)
-        have_dict = dict(have_set)
-        diff_dict = dict(diff)
-
-        severity = diff_dict.get('severity')
+        severity = dict_diff.get('severity')
         if severity != None:
             commands.append('log severity {0}'.format(severity))
 
-        if want.get('syslog') != None:
-            if have.get('syslog') != None:
-                syslog = tuple(set(want_dict.get('syslog')) -
-                               set(have_dict.get('syslog')))
-            else:
-                syslog = diff_dict.get('syslog')
-
-            if syslog != None:
-                for each in syslog:
-                    commands.append('log syslog {0}'.format(each))
+        syslog = dict_diff.get('syslog')
+        if syslog != None:
+            for each in syslog:
+                commands.append('log syslog {0}'.format(each))
 
         return commands
 

@@ -129,10 +129,8 @@ class Vlan(ConfigBase):
         """
         commands = []
         if want:
-            if have:
-                commands.extend(self._set_config(want, have))
-            else:
-                commands.extend(self._set_config(want, []))
+            have = have if have else []
+            commands.extend(self._set_config(want, have))
         return commands
 
     def _state_deleted(self, want, have):
@@ -143,15 +141,9 @@ class Vlan(ConfigBase):
                   of the provided objects
         """
         commands = []
-        if want:
-            for config in want:
-                if have:
-                    for each in have:
-                        if each['vlan_id'] == config['vlan_id']:
-                            commands.extend(self._delete_config(config, each))
-                            break
-        else:
-            commands.extend(self._delete_config(dict(), dict()))
+        want = want if want else []
+        have = have if have else []
+        commands.extend(self._delete_config(want, have))
         return commands
 
     def _set_config(self, want, have):
@@ -163,23 +155,27 @@ class Vlan(ConfigBase):
         dict_diff = differ.deepdiff()
         for diff in dict_diff:
             vlan_id = diff.get('vlan_id')
+            vlan_cmd = 'dot1q vlan {0}'.format(vlan_id)
+
+            if len(diff) == 1:
+                commands.append(vlan_cmd)
+                continue
+
             name = diff.get('name')
             if name != None:
-                commands.append('dot1q vlan {0} name {1}'.format(
-                    vlan_id, name))
+                commands.append('{0} name {1}'.format(vlan_cmd, name))
 
             interface = diff.get('interface')
             if interface != None:
                 for each in interface:
                     each = dict(each)
                     intf_name = each.get('name')
-                    if intf_name != None:
-                        cmd = 'dot1q vlan {0} interface {1}'.format(
-                            vlan_id, intf_name)
-                        tagged = each.get('tagged')
-                        if tagged != None:
-                            cmd += ' tagged' if tagged else ' untagged'
-                        commands.append(cmd)
+                    intf_cmd = '{0} interface {1}'.format(vlan_cmd, intf_name)
+
+                    tagged = each.get('tagged')
+                    if tagged != None:
+                        intf_cmd += ' tagged' if tagged else ' untagged'
+                    commands.append(intf_cmd)
 
         return commands
 
@@ -187,31 +183,40 @@ class Vlan(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        if want.get('vlan_id') != None:
-            if have.get('vlan_id') != None:
-                count = 0
+        if not want and have:
+            return ['no dot1q']
 
-                if want.get('name') != None:
-                    count += 1
-                    if have.get('name') != None:
-                        commands.append(
-                            'no dot1q vlan {0} name'.format(want.get('vlan_id')))
+        differ = DictDiffer(have, want, {'vlan_id': 0, 'name': 1})
+        dict_intsec = differ.deepintersect()
 
-                if want.get('interface') != None:
-                    count += 1
-                    if have.get('interface') != None:
-                        if want.get('interface')['name'] != None:
-                            cmd = 'no dot1q vlan {0} interface {1}'.format(
-                                want.get('vlan_id'), want.get('interface')['name'])
+        for diff in dict_intsec:
+            vlan_id = diff.get('vlan_id')
+            vlan_cmd = 'no dot1q vlan {0}'.format(vlan_id)
 
-                            if want.get('interface')['tagged'] != None:
-                                cmd += ' tagged'
-                            commands.append(cmd)
+            vlan_n_keys = diff.get('n_keys')
+            if vlan_n_keys == 1:
+                commands.append(vlan_cmd)
+                continue
 
-                if count == 0:
-                    commands.append(
-                        'no dot1q vlan {0}'.format(want.get('vlan_id')))
-        else:
-            commands.append('no dot1q')
+            name = diff.get('name')
+            if name != None:
+                commands.append('{0} name'.format(vlan_cmd))
+
+            interface = diff.get('interface')
+            if interface != None:
+                for each in interface:
+                    each = dict(each)
+                    intf_name = each.get('name')
+                    intf_cmd = '{0} interface {1}'.format(vlan_cmd, intf_name)
+
+                    intf_n_keys = each.get('n_keys')
+                    if intf_n_keys == 1:
+                        commands.append(intf_cmd)
+                        continue
+
+                    tagged = each.get('tagged')
+                    if tagged != None:
+                        intf_cmd += ' tagged' if tagged else ' untagged'
+                    commands.append(intf_cmd)
 
         return commands

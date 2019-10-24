@@ -139,10 +139,8 @@ class Log(ConfigBase):
         """
         commands = []
         if want:
-            if have:
-                commands.extend(self._set_config(want[0], have[0]))
-            else:
-                commands.extend(self._set_config(want[0], dict()))
+            have = have[0] if have else dict()
+            commands.extend(self._set_config(want[0], have))
         return commands
 
     def _state_deleted(self, want, have):
@@ -153,13 +151,9 @@ class Log(ConfigBase):
                   of the provided objects
         """
         commands = []
-        if want:
-            for config in want:
-                if have:
-                    for each in have:
-                        commands.extend(self._delete_config(config, each))
-        else:
-            commands.extend(self._delete_config(dict(), dict()))
+        want = want[0] if want else dict()
+        have = have[0] if have else dict()
+        commands.extend(self._delete_config(want, have))
         return commands
 
     def _set_config(self, want, have):
@@ -183,21 +177,20 @@ class Log(ConfigBase):
     def _delete_config(self, want, have):
         # Set the interface config based on the want and have config
         commands = []
-        count = 0
 
-        if want.get('syslog') != None:
-            count += 1
-            if have.get('syslog') != None:
-                for syslog in want.get('syslog'):
-                    if syslog in have.get('syslog'):
-                        commands.append('no log syslog {0}'.format(syslog))
+        if not want and have:
+            return ['no log']
 
-        if want.get('severity') != None:
-            count += 1
-            if have.get('severity') != None:
-                commands.append('no log severity')
+        differ = DictDiffer(have, want)
+        dict_intsec = differ.deepintersect()
 
-        if count == 0:
-            commands.append('no log')
+        severity = dict_intsec.get('severity')
+        if severity != None:
+            commands.append('no log severity')
+
+        syslog = dict_intsec.get('syslog')
+        if syslog != None:
+            for each in syslog:
+                commands.append('no log syslog {0}'.format(each))
 
         return commands

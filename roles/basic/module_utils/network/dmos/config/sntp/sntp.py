@@ -139,10 +139,8 @@ class Sntp(ConfigBase):
         """
         commands = []
         if want:
-            if have:
-                commands.extend(self._set_config(want[0], have[0]))
-            else:
-                commands.extend(self._set_config(want[0], dict()))
+            have = have[0] if have else dict()
+            commands.extend(self._set_config(want[0], have))
         return commands
 
     def _state_deleted(self, want, have):
@@ -153,13 +151,9 @@ class Sntp(ConfigBase):
                   of the provided objects
         """
         commands = []
-        if want:
-            for config in want:
-                if have:
-                    for each in have:
-                        commands.extend(self._delete_config(config, each))
-        else:
-            commands.extend(self._delete_config(dict(), dict()))
+        want = want[0] if want else dict()
+        have = have[0] if have else dict()
+        commands.extend(self._delete_config(want, have))
         return commands
 
     def _set_config(self, want, have):
@@ -179,12 +173,16 @@ class Sntp(ConfigBase):
             for each in auth_key:
                 each = dict(each)
                 id_value = each.get('id')
-                if id_value != None:
-                    cmd = 'sntp authentication-key {0}'.format(id_value)
-                    pass_value = each.get('pass')
-                    if pass_value != None:
-                        cmd += ' md5 {0}'.format(pass_value)
-                    commands.append(cmd)
+                auth_key_cmd = 'sntp authentication-key {0}'.format(id_value)
+
+                if len(each) == 1:
+                    commands.append(auth_key_cmd)
+                    continue
+
+                pass_value = each.get('pass')
+                if pass_value != None:
+                    auth_key_cmd += ' md5 {0}'.format(pass_value)
+                commands.append(auth_key_cmd)
 
         client = dict_diff.get('client')
         if client != None:
@@ -203,12 +201,16 @@ class Sntp(ConfigBase):
             for each in server:
                 each = dict(each)
                 address = each.get('address')
-                if address != None:
-                    cmd = 'sntp server {0}'.format(address)
-                    key_id = each.get('key_id')
-                    if key_id != None:
-                        cmd += ' key {0}'.format(key_id)
-                    commands.append(cmd)
+                server_cmd = 'sntp server {0}'.format(address)
+
+                if len(each) == 1:
+                    commands.append(server_cmd)
+                    continue
+
+                key_id = each.get('key_id')
+                if key_id != None:
+                    server_cmd += ' key {0}'.format(key_id)
+                commands.append(server_cmd)
 
         source = dict_diff.get('source')
         if source != None:
@@ -226,57 +228,72 @@ class Sntp(ConfigBase):
 
     def _delete_config(self, want, have):
         commands = []
-        count = 0
 
-        if want.get('auth') != None:
-            count += 1
-            if have.get('auth') != None:
-                commands.append('no sntp authenticate')
+        if not want and have:
+            return ['no sntp']
 
-        if want.get('auth_key') != None:
-            count += 1
-            for auth_key in want.get('auth_key'):
-                if have.get('auth_key') != None:
-                    for each in have.get('auth_key'):
-                        if each.get('id') and each.get('id') == auth_key.get('id'):
-                            commands.append(
-                                'no sntp authentication-key {0}'.format(auth_key.get('id')))
+        differ = DictDiffer(have, want, {'id': 0, 'address': 0})
+        dict_intsec = differ.deepintersect()
 
-        if want.get('client') != None:
-            count += 1
-            if have.get('client') != None:
-                commands.append('no sntp client')
+        auth = dict_intsec.get('auth')
+        if auth != None:
+            commands.append('no sntp authenticate')
 
-        if want.get('max_poll') != None:
-            count += 1
-            if have.get('max_poll') != None:
-                commands.append('no sntp max-poll')
+        auth_key = dict_intsec.get('auth_key')
+        if auth_key != None:
+            for each in auth_key:
+                each = dict(each)
+                id_value = each.get('id')
+                auth_key_cmd = 'no sntp authentication-key {0}'.format(
+                    id_value)
 
-        if want.get('min_poll') != None:
-            count += 1
-            if have.get('min_poll') != None:
-                commands.append('no sntp min-poll')
+                auth_key_n_keys = each.get('n_keys')
+                if auth_key_n_keys == 1:
+                    commands.append(auth_key_cmd)
+                    continue
 
-        if want.get('server') != None:
-            count += 1
-            for server in want.get('server'):
-                if have.get('server') != None:
-                    for each in have.get('server'):
-                        if each.get('address') and each.get('address') == server.get('address'):
-                            cmd = 'no sntp server {0}'.format(
-                                server.get('address'))
-                            if each.get('key_id') and server.get('key_id'):
-                                cmd += ' key'
-                            commands.append(cmd)
+                pass_value = each.get('pass')
+                if pass_value != None:
+                    auth_key_cmd += ' md5'
+                commands.append(auth_key_cmd)
 
-        if want.get('source') != None:
-            if have.get('source') != None:
-                if want.get('source').get('ipv4') != None and have.get('source').get('ipv4') != None:
-                    commands.append('no sntp source ipv4')
-                if want.get('source').get('ipv6') != None and have.get('source').get('ipv6') != None:
-                    commands.append('no sntp source ipv6')
+        client = dict_intsec.get('client')
+        if client != None:
+            commands.append('no sntp client')
 
-        if count == 0:
-            commands.append('no sntp')
+        max_poll = dict_intsec.get('max_poll')
+        if max_poll != None:
+            commands.append('no sntp max-poll')
+
+        min_poll = dict_intsec.get('min_poll')
+        if min_poll != None:
+            commands.append('no sntp min-poll')
+
+        server = dict_intsec.get('server')
+        if server != None:
+            for each in server:
+                each = dict(each)
+                address = each.get('address')
+                server_cmd = 'no sntp server {0}'.format(address)
+
+                server_n_keys = each.get('n_keys')
+                if server_n_keys == 1:
+                    commands.append(server_cmd)
+                    continue
+
+                key_id = each.get('key_id')
+                if key_id != None:
+                    server_cmd += ' key'
+                commands.append(server_cmd)
+
+        source = dict_intsec.get('source')
+        if source != None:
+            source = dict(source)
+            ipv4 = source.get('ipv4')
+            if ipv4 != None:
+                commands.append('no sntp source ipv4')
+            ipv6 = source.get('ipv6')
+            if ipv6 != None:
+                commands.append('no sntp source ipv6')
 
         return commands

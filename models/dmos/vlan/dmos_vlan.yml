@@ -29,16 +29,19 @@ DOCUMENTATION: |
         vlan_id:
           description: <1-4094> VLAN ID
           type: int
+          required: true
         name:
           description: Text name identifying the VLAN (max 32 chars).
           type: str
         interface:
           description: Statically add interfaces to VLANs and remove interfaces from VLANs
-          type: dict
+          type: list
+          elements: dict
           suboptions:
             name:
               description: Interface name
               type: str
+              required: true
             tagged:
               description: Set this interface as an tagged member
               type: bool

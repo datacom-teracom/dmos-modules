@@ -139,10 +139,8 @@ class Linkagg(ConfigBase):
         """
         commands = []
         if want:
-            if have:
-                commands.extend(self._set_config(want[0], have[0]))
-            else:
-                commands.extend(self._set_config(want[0], dict()))
+            have = have[0] if have else dict()
+            commands.extend(self._set_config(want[0], have))
         return commands
 
     def _state_deleted(self, want, have):
@@ -153,13 +151,9 @@ class Linkagg(ConfigBase):
                   of the provided objects
         """
         commands = []
-        if want:
-            for config in want:
-                if have:
-                    for each in have:
-                        commands.extend(self._delete_config(config, each))
-        else:
-            commands.extend(self._delete_config(dict(), dict()))
+        want = want[0] if want else dict()
+        have = have[0] if have else dict()
+        commands.extend(self._delete_config(want, have))
         return commands
 
     def _set_config(self, want, have):
@@ -185,16 +179,21 @@ class Linkagg(ConfigBase):
         commands = []
 
         lag_id = diff_dict.get('lag_id')
+        lag_cmd = 'link-aggregation interface lag {0}'.format(lag_id)
+
+        if len(diff_dict) == 1:
+            commands.append(lag_cmd)
+            return commands
 
         admin_status = diff_dict.get('admin_status')
         if admin_status != None:
             commands.append(
-                'link-aggregation interface lag {0} administrative-status {1}'.format(lag_id, admin_status))
+                '{0} administrative-status {1}'.format(lag_cmd, admin_status))
 
         description = diff_dict.get('description')
         if description != None:
             commands.append(
-                'link-aggregation interface lag {0} description {1}'.format(lag_id, description))
+                '{0} description "{1}"'.format(lag_cmd, description))
 
         interface = diff_dict.get('interface')
         if interface != None:
@@ -205,142 +204,118 @@ class Linkagg(ConfigBase):
         load_balance = diff_dict.get('load_balance')
         if load_balance != None:
             commands.append(
-                'link-aggregation interface lag {0} load-balance {1}'.format(lag_id, load_balance))
+                '{0} load-balance {1}'.format(lag_cmd, load_balance))
 
         max_active = diff_dict.get('max_active')
         if max_active != None:
             commands.append(
-                'link-aggregation interface lag {0} maximum-active links {1}'.format(lag_id, max_active))
+                '{0} maximum-active links {1}'.format(lag_cmd, max_active))
 
         min_active = diff_dict.get('min_active')
         if min_active != None:
             commands.append(
-                'link-aggregation interface lag {0} minimum-active links {1}'.format(lag_id, min_active))
+                '{0} minimum-active links {1}'.format(lag_cmd, min_active))
 
         mode = diff_dict.get('mode')
         if mode != None:
-            commands.append(
-                'link-aggregation interface lag {0} mode {1}'.format(lag_id, mode))
+            commands.append('{0} mode {1}'.format(lag_cmd, mode))
 
         period = diff_dict.get('period')
         if period != None:
-            commands.append(
-                'link-aggregation interface lag {0} period {1}'.format(lag_id, period))
+            commands.append('{0} period {1}'.format(lag_cmd, period))
 
         return commands
 
     def _get_interface_commands(self, diff_dict, lag_id):
         intf_name = diff_dict.get('name')
-        cmd = 'link-aggregation interface lag {0} interface {1}'.format(
+        intf_cmd = 'link-aggregation interface lag {0} interface {1}'.format(
             lag_id, intf_name)
 
         port_prio = diff_dict.get('port_prio')
         if port_prio != None:
-            cmd += ' port-priority {0}'.format(port_prio)
+            intf_cmd += ' port-priority {0}'.format(port_prio)
 
-        return [cmd]
+        return [intf_cmd]
 
     def _delete_config(self, want, have):
+        # Set the interface config based on the want and have config
         commands = []
-        count = 0
 
-        if want.get('sys_prio') != None:
-            count += 1
-            if have.get('sys_prio') != None:
-                commands.append('no link-aggregation system-priority')
+        if not want and have:
+            return ['no link-aggregation']
 
-        if want.get('lag') != None:
-            for each_want_lag in want.get('lag'):
-                count += 1
-                if have.get('lag') != None:
-                    for each_have_lag in have.get('lag'):
-                        if each_want_lag.get('lag_id') and each_want_lag.get('lag_id') == each_have_lag.get('lag_id'):
-                            commands.extend(self._delete_lag_config(
-                                each_want_lag, each_have_lag))
+        differ = DictDiffer(have, want, {'lag_id': 0, 'name': 1})
+        dict_intsec = differ.deepintersect()
 
-        if count == 0:
-            commands.append('no link-aggregation')
+        sys_prio = dict_intsec.get('sys_prio')
+        if sys_prio != None:
+            commands.append('no link-aggregation system-priority')
+
+        lag = dict_intsec.get('lag')
+        if lag != None:
+            for each_lag in lag:
+                commands.extend(self._delete_lag_commands(each_lag))
 
         return commands
 
-    def _delete_lag_config(self, want, have):
+    def _delete_lag_commands(self, dict_intsec):
         commands = []
-        count = 0
 
-        if want.get('lag_id') != None:
-            lag_id = want.get('lag_id')
-        else:
+        lag_id = dict_intsec.get('lag_id')
+        lag_cmd = 'no link-aggregation interface lag {0}'.format(lag_id)
+
+        lag_n_keys = dict_intsec.get('n_keys')
+        if lag_n_keys == 1:
+            commands.append(lag_cmd)
             return commands
 
-        if want.get('admin_status') != None:
-            count += 1
-            if have.get('admin_status') != None:
-                commands.append(
-                    'no link-aggregation interface lag {0} administrative-status'.format(lag_id))
+        admin_status = dict_intsec.get('admin_status')
+        if admin_status != None:
+            commands.append('{0} administrative-status'.format(lag_cmd))
 
-        if want.get('description') != None:
-            count += 1
-            if have.get('description') != None:
-                commands.append(
-                    'no link-aggregation interface lag {0} description'.format(lag_id))
+        description = dict_intsec.get('description')
+        if description != None:
+            commands.append('{0} description'.format(lag_cmd))
 
-        if want.get('interface') != None:
-            count += 1
-            for each_want_interface in want.get('interface'):
-                if have.get('interface') != None:
-                    for each_have_interface in have.get('interface'):
-                        if each_want_interface.get('name') and each_want_interface.get('name') == each_have_interface.get('name'):
-                            commands.extend(self._delete_interface_config(
-                                each_want_interface, each_have_lag, lag_id))
+        interface = dict_intsec.get('interface')
+        if interface != None:
+            for each_interface in interface:
+                commands.extend(self._delete_interface_commands(
+                    each_interface, lag_id))
 
-        if want.get('load_balance') != None:
-            count += 1
-            if have.get('load_balance') != None:
-                commands.append(
-                    'no link-aggregation interface lag {0} load-balance'.format(lag_id))
+        load_balance = dict_intsec.get('load_balance')
+        if load_balance != None:
+            commands.append('{0} load-balance'.format(lag_cmd))
 
-        if want.get('max_active') != None:
-            count += 1
-            if have.get('max_active') != None:
-                commands.append(
-                    'no link-aggregation interface lag {0} maximum-active'.format(lag_id))
+        max_active = dict_intsec.get('max_active')
+        if max_active != None:
+            commands.append('{0} maximum-active'.format(lag_cmd))
 
-        if want.get('min_active') != None:
-            count += 1
-            if have.get('min_active') != None:
-                commands.append(
-                    'no link-aggregation interface lag {0} minimum-active'.format(lag_id))
+        min_active = dict_intsec.get('min_active')
+        if min_active != None:
+            commands.append('{0} minimum-active'.format(lag_cmd))
 
-        if want.get('mode') != None:
-            count += 1
-            if have.get('mode') != None:
-                commands.append(
-                    'no link-aggregation interface lag {0} mode'.format(lag_id))
+        mode = dict_intsec.get('mode')
+        if mode != None:
+            commands.append('{0} mode'.format(lag_cmd))
 
-        if want.get('period') != None:
-            count += 1
-            if have.get('period') != None:
-                commands.append(
-                    'no link-aggregation interface lag {0} period'.format(lag_id))
-
-        if count == 0:
-            commands.append(
-                'no link-aggregation interface lag {0}'.format(lag_id))
+        period = dict_intsec.get('period')
+        if period != None:
+            commands.append('{0} period'.format(lag_cmd))
 
         return commands
 
-    def _delete_interface_config(self, want, have, lag_id):
-        commands = []
+    def _delete_interface_commands(self, dict_intsec, lag_id):
+        intf_name = dict_intsec.get('name')
+        intf_cmd = 'no link-aggregation interface lag {0} interface {1}'.format(
+            lag_id, intf_name)
 
-        if want.get('name') != None:
-            cmd = 'no link-aggregation interface lag {0} interface {1}'.format(
-                lag_id, want.get('name'))
-        else:
-            return commands
+        intf_n_keys = dict_intsec.get('n_keys')
+        if intf_n_keys == 1:
+            return [intf_cmd]
 
-        if want.get('port_prio') != None:
-            if have.get('port_prio') != None:
-                cmd += ' port-priority {0}'.format(want.get('port_prio'))
-                commands.append(cmd)
+        port_prio = dict_intsec.get('port_prio')
+        if port_prio != None:
+            intf_cmd += ' port-priority'
 
-        return commands
+        return [intf_cmd]

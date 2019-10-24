@@ -16,6 +16,7 @@ from ansible.module_utils.network.dmos.facts.sntp.sntp import SntpFacts
 from ansible.module_utils.network.dmos.facts.vlan.vlan import VlanFacts
 from ansible.module_utils.network.dmos.facts.linkagg.linkagg import LinkaggFacts
 from ansible.module_utils.network.dmos.facts.l2_interface.l2_interface import L2_interfaceFacts
+from ansible.module_utils.network.dmos.facts.lldp.lldp import LldpFacts
 
 
 FACT_LEGACY_SUBSETS = {}
@@ -25,6 +26,7 @@ FACT_RESOURCE_SUBSETS = dict(
     vlan=VlanFacts,
     linkagg=LinkaggFacts,
     l2_interface=L2_interfaceFacts,
+    lldp=LldpFacts,
 )
 
 

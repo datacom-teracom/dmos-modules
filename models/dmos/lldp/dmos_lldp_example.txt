@@ -1,0 +1,24 @@
+# Using Present
+
+<placeholder for the configuration example prior to module invocation>
+
+- name: Configure LLDP
+  dmos_lldp:
+    config:
+      - interface:
+          - name: gigabit-ethernet-1/1/1
+            admin_status: rx-only
+            notification: true
+            tlv_port_description: true
+            tlv_system_capabilities: true
+            tlv_system_description: true
+            tlv_system_name: true
+        msg_fast_tx: 1
+        msg_tx_hold_multi: 4
+        msg_tx_interval: 10
+        notification_interval: 30
+        reinit_delay: 2
+        tx_credit_max: 5
+        tx_fast_init: 1
+
+<placeholder for the configuration example after module invocation>

@@ -147,6 +147,24 @@ EXAMPLES = """
 - dmos_facts:
     gather_subset: min
     gather_network_resources: l2_interface
+
+# Collect only the lldp facts
+- dmos_facts:
+    gather_subset:
+      - !all
+      - !min
+    gather_network_resources:
+      - lldp
+
+# Do not collect lldp facts
+- dmos_facts:
+    gather_network_resources:
+      - "!lldp"
+
+# Collect lldp and minimal default facts
+- dmos_facts:
+    gather_subset: min
+    gather_network_resources: lldp
 """
 
 RETURN = """

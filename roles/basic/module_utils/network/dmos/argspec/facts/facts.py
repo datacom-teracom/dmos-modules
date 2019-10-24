@@ -21,6 +21,7 @@ class FactsArgs(object):  # pylint: disable=R0903
         'sntp',
         'vlan',
         'linkagg',
+        'l2_interface',
     ]
 
     argument_spec = {

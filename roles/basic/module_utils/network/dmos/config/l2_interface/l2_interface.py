@@ -4,7 +4,7 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 """
-The dmos_log class
+The dmos_l2_interface class
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to it's desired end-state is
@@ -16,9 +16,9 @@ from ansible.module_utils.network.dmos.facts.facts import Facts
 from ansible.module_utils.network.dmos.utils.dict_differ import DictDiffer
 
 
-class Log(ConfigBase):
+class L2_interface(ConfigBase):
     """
-    The dmos_log class
+    The dmos_l2_interface class
     """
 
     gather_subset = [
@@ -27,13 +27,13 @@ class Log(ConfigBase):
     ]
 
     gather_network_resources = [
-        'log',
+        'l2_interface',
     ]
 
     def __init__(self, module):
-        super(Log, self).__init__(module)
+        super(L2_interface, self).__init__(module)
 
-    def get_log_facts(self):
+    def get_l2_interface_facts(self):
         """ Get the 'facts' (the current configuration)
 
         :rtype: A dictionary
@@ -41,10 +41,11 @@ class Log(ConfigBase):
         """
         facts, _warnings = Facts(self._module).get_facts(
             self.gather_subset, self.gather_network_resources)
-        log_facts = facts['ansible_network_resources'].get('log')
-        if not log_facts:
+        l2_interface_facts = facts['ansible_network_resources'].get(
+            'l2_interface')
+        if not l2_interface_facts:
             return []
-        return log_facts
+        return l2_interface_facts
 
     def execute_module(self):
         """ Execute the module
@@ -56,8 +57,8 @@ class Log(ConfigBase):
         warnings = list()
         commands = list()
 
-        existing_log_facts = self.get_log_facts()
-        commands.extend(self.set_config(existing_log_facts))
+        existing_l2_interface_facts = self.get_l2_interface_facts()
+        commands.extend(self.set_config(existing_l2_interface_facts))
         if commands:
             if not self._module.check_mode:
                 response = self._connection.edit_config(commands)
@@ -67,16 +68,16 @@ class Log(ConfigBase):
             result['changed'] = True
         result['commands'] = commands
 
-        changed_log_facts = self.get_log_facts()
+        changed_l2_interface_facts = self.get_l2_interface_facts()
 
-        result['before'] = existing_log_facts
+        result['before'] = existing_l2_interface_facts
         if result['changed']:
-            result['after'] = changed_log_facts
+            result['after'] = changed_l2_interface_facts
 
         result['warnings'] = warnings
         return result
 
-    def set_config(self, existing_log_facts):
+    def set_config(self, existing_l2_interface_facts):
         """ Collect the configuration from the args passed to the module,
             collect the current configuration (as a dict from facts)
 
@@ -85,7 +86,7 @@ class Log(ConfigBase):
                   to the desired configuration
         """
         want = self._module.params['config']
-        have = existing_log_facts
+        have = existing_l2_interface_facts
         resp = self.set_state(want, have)
         return to_list(resp)
 
@@ -138,8 +139,8 @@ class Log(ConfigBase):
         """
         commands = []
         if want:
-            have = have[0] if have else dict()
-            commands.extend(self._set_config(want[0], have))
+            have = have if have else []
+            commands.extend(self._set_config(want, have))
         return commands
 
     def _state_deleted(self, want, have):
@@ -150,8 +151,8 @@ class Log(ConfigBase):
                   of the provided objects
         """
         commands = []
-        want = want[0] if want else dict()
-        have = have[0] if have else dict()
+        want = want if want else []
+        have = have if have else []
         commands.extend(self._delete_config(want, have))
         return commands
 
@@ -159,17 +160,42 @@ class Log(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        differ = DictDiffer(have, want)
+        differ = DictDiffer(have, want, {'interface_name': 0, 'traffic': 1})
+
         dict_diff = differ.deepdiff()
+        for diff in dict_diff:
+            interface_name = diff.get('interface_name')
+            switchport_cmd = 'switchport interface {0}'.format(interface_name)
 
-        severity = dict_diff.get('severity')
-        if severity != None:
-            commands.append('log severity {0}'.format(severity))
+            if len(diff) == 1:
+                commands.append(switchport_cmd)
+                continue
 
-        syslog = dict_diff.get('syslog')
-        if syslog != None:
-            for each in syslog:
-                commands.append('log syslog {0}'.format(each))
+            native_vlan_id = diff.get('native_vlan_id')
+            if native_vlan_id != None:
+                commands.append(
+                    '{0} native-vlan vlan-id {1}'.format(switchport_cmd, native_vlan_id))
+
+            qinq = diff.get('qinq')
+            if qinq != None:
+                commands.append(
+                    '{0} {1} qinq'.format('' if qinq else 'no', switchport_cmd))
+
+            storm_control = diff.get('storm_control')
+            if storm_control != None:
+                for each in storm_control:
+                    each = dict(each)
+                    traffic = each.get('traffic')
+                    percent = each.get('percent')
+                    storm_control_cmd = '{0} storm-control {1} {2}'.format(
+                        switchport_cmd, traffic, percent)
+
+                    commands.append(storm_control_cmd)
+
+            tpid = diff.get('tpid')
+            if tpid != None:
+                commands.append(
+                    '{0} tpid {1}'.format(switchport_cmd, tpid))
 
         return commands
 
@@ -178,18 +204,44 @@ class Log(ConfigBase):
         commands = []
 
         if not want and have:
-            return ['no log']
+            return ['no switchport']
 
-        differ = DictDiffer(have, want)
+        differ = DictDiffer(have, want, {'interface_name': 0, 'traffic': 1})
         dict_intsec = differ.deepintersect()
 
-        severity = dict_intsec.get('severity')
-        if severity != None:
-            commands.append('no log severity')
+        for diff in dict_intsec:
+            interface_name = diff.get('interface_name')
+            switchport_cmd = 'no switchport interface {0}'.format(
+                interface_name)
 
-        syslog = dict_intsec.get('syslog')
-        if syslog != None:
-            for each in syslog:
-                commands.append('no log syslog {0}'.format(each))
+            switchport_n_keys = diff.get('n_keys')
+            if switchport_n_keys == 1:
+                commands.append(switchport_cmd)
+                continue
+
+            native_vlan_id = diff.get('native_vlan_id')
+            if native_vlan_id != None:
+                commands.append(
+                    '{0} native-vlan'.format(switchport_cmd))
+
+            qinq = diff.get('qinq')
+            if qinq != None:
+                commands.append(
+                    '{0} qinq'.format(switchport_cmd))
+
+            storm_control = diff.get('storm_control')
+            if storm_control != None:
+                for each in storm_control:
+                    each = dict(each)
+                    traffic = each.get('traffic')
+                    storm_control_cmd = '{0} storm-control {1}'.format(
+                        switchport_cmd, traffic)
+
+                    commands.append(storm_control_cmd)
+
+            tpid = diff.get('tpid')
+            if tpid != None:
+                commands.append(
+                    '{0} tpid'.format(switchport_cmd))
 
         return commands

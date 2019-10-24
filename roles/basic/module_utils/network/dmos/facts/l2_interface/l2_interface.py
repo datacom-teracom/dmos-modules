@@ -4,7 +4,7 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 """
-The dmos vlan fact class
+The dmos l2_interface fact class
 It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
@@ -13,16 +13,17 @@ import json
 from copy import deepcopy
 
 from ansible.module_utils.network.common import utils
-from ansible.module_utils.network.dmos.argspec.vlan.vlan import VlanArgs
+from ansible.module_utils.network.dmos.argspec.l2_interface.l2_interface import L2_interfaceArgs
+from ansible.module_utils.network.dmos.utils.utils import dict_has_key
 
 
-class VlanFacts(object):
-    """ The dmos vlan fact class
+class L2_interfaceFacts(object):
+    """ The dmos l2_interface fact class
     """
 
     def __init__(self, module, subspec='config', options='options'):
         self._module = module
-        self.argument_spec = VlanArgs.argument_spec
+        self.argument_spec = L2_interfaceArgs.argument_spec
         spec = deepcopy(self.argument_spec)
         if subspec:
             if options:
@@ -35,7 +36,7 @@ class VlanFacts(object):
         self.generated_spec = utils.generate_dict(facts_argument_spec)
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """ Populate the facts for vlan
+        """ Populate the facts for l2_interface
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
         :param data: previously collected conf
@@ -44,12 +45,12 @@ class VlanFacts(object):
         """
         if not data:
             data = connection.get(
-                'show running-config dot1q | details | nomore | display json')
+                'show running-config switchport | details | nomore | display json')
 
         objs = []
         try:
             data_dict = json.loads(data)['data']
-            data_list = data_dict['vlan-manager:dot1q']['vlan']
+            data_list = data_dict['dmos-base:config']['switchport-native-vlan:switchport']['interface']
         except:
             pass
         else:
@@ -62,7 +63,7 @@ class VlanFacts(object):
         if objs:
             params = utils.validate_config(
                 self.argument_spec, {'config': objs})
-            facts['vlan'] = params['config']
+            facts['l2_interface'] = params['config']
 
         ansible_facts['ansible_network_resources'].update(facts)
         return ansible_facts
@@ -78,19 +79,41 @@ class VlanFacts(object):
         :returns: The generated config
         """
         config = deepcopy(spec)
-        config['vlan_id'] = conf.get('vlan-id')
-        config['name'] = conf.get('name')
+        config['interface_name'] = conf.get('interface-name')
 
-        interface_value = conf.get('interface')
-        if interface_value != None:
-            interface = []
-            for each in interface_value:
-                each_interface = dict()
-                each_interface['name'] = each.get('interface-name')
-                tagged = each.get('tagged-untagged')
-                if tagged != None:
-                    each_interface['tagged'] = True if tagged == 'tagged' else False
-                interface.append(each_interface)
-            config['interface'] = interface
+        native_vlan = conf.get('native-vlan')
+        if native_vlan != None:
+            config['native_vlan_id'] = native_vlan.get('vlan-id')
+
+        config['qinq'] = dict_has_key(conf, 'switchport-qinq:qinq')
+
+        storm_control = conf.get('dmos-storm-control:storm-control')
+        if storm_control != None:
+            storm_control_list = []
+
+            broadcast = storm_control.get('broadcast')
+            if broadcast != None:
+                percent = broadcast.get('percent')
+                if percent != None:
+                    storm_control_list.append(
+                        {'traffic': 'broadcast', 'percent': percent})
+
+            multicast = storm_control.get('multicast')
+            if multicast != None:
+                percent = multicast.get('percent')
+                if percent != None:
+                    storm_control_list.append(
+                        {'traffic': 'multicast', 'percent': percent})
+
+            unicast = storm_control.get('unicast')
+            if unicast != None:
+                percent = unicast.get('percent')
+                if percent != None:
+                    storm_control_list.append(
+                        {'traffic': 'unicast', 'percent': percent})
+
+            config['storm_control'] = storm_control_list
+
+        config['tpid'] = conf.get('switchport-tpid:tpid')
 
         return utils.remove_empties(config)

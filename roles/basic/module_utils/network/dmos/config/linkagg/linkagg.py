@@ -13,7 +13,6 @@ created
 from ansible.module_utils.network.common.cfg.base import ConfigBase
 from ansible.module_utils.network.common.utils import to_list
 from ansible.module_utils.network.dmos.facts.facts import Facts
-from ansible.module_utils.network.dmos.utils.utils import dict_to_set
 from ansible.module_utils.network.dmos.utils.dict_differ import DictDiffer
 
 

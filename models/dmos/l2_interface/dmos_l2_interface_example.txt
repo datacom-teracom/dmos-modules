@@ -1,0 +1,20 @@
+# Using Present
+
+<placeholder for the configuration example prior to module invocation>
+
+- name: Configure L2 Interface
+  dmos_l2_interface:
+    config:
+      - interface_name: gigabit-ethernet-1/1/6
+        native_vlan_id: 1
+        qinq: false
+        storm_control:
+          - traffic: broadcast
+            percent: 10.1
+          - traffic: multicast
+            percent: 59.5
+          - traffic: unicast
+            percent: 0.1
+        tpid: '0x88a8'
+
+<placeholder for the configuration example after module invocation>

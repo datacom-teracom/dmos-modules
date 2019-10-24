@@ -13,7 +13,6 @@ created
 from ansible.module_utils.network.common.cfg.base import ConfigBase
 from ansible.module_utils.network.common.utils import to_list
 from ansible.module_utils.network.dmos.facts.facts import Facts
-from ansible.module_utils.network.dmos.utils.utils import dict_to_set
 from ansible.module_utils.network.dmos.utils.dict_differ import DictDiffer
 
 
@@ -108,6 +107,16 @@ class Vlan(ConfigBase):
             commands = self._state_merged(want, have)
         elif state == 'replaced':
             commands = self._state_replaced(want, have)
+        return commands
+
+    def _state_replaced(self, want, have):
+        """ The command generator when state is replaced
+
+        :rtype: A list
+        :returns: the commands necessary to migrate the current configuration
+                  to the desired configuration
+        """
+        commands = []
         return commands
 
     def _state_overridden(self, want, have):

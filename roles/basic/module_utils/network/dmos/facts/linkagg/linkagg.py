@@ -14,7 +14,7 @@ from copy import deepcopy
 
 from ansible.module_utils.network.common import utils
 from ansible.module_utils.network.dmos.argspec.linkagg.linkagg import LinkaggArgs
-from ansible.module_utils.network.dmos.utils.utils import get_arg_from_cmd_line
+
 
 class LinkaggFacts(object):
     """ The dmos linkagg fact class
@@ -60,7 +60,8 @@ class LinkaggFacts(object):
 
         facts = {}
         if objs:
-            params = utils.validate_config(self.argument_spec, {'config': objs})
+            params = utils.validate_config(
+                self.argument_spec, {'config': objs})
             facts['linkagg'] = params['config']
 
         ansible_facts['ansible_network_resources'].update(facts)
@@ -90,12 +91,14 @@ class LinkaggFacts(object):
                 for each in lag:
                     each_lag = dict()
                     each_lag['lag_id'] = each.get('lag-id')
-                    each_lag['admin_status'] = each.get('administrative-status')
+                    each_lag['admin_status'] = each.get(
+                        'administrative-status')
 
                     lag_config = each.get('interface-lag-config')
                     if lag_config != None:
                         each_lag['description'] = lag_config.get('description')
-                        each_lag['load_balance'] = lag_config.get('load-balance')
+                        each_lag['load_balance'] = lag_config.get(
+                            'load-balance')
                         each_lag['mode'] = lag_config.get('mode')
                         each_lag['period'] = lag_config.get('period')
 
@@ -113,8 +116,10 @@ class LinkaggFacts(object):
                         intf_config_list = []
                         for each_intf_config in intf_config:
                             intf_config_dict = dict()
-                            intf_config_dict['name'] = each_intf_config.get('interface-name')
-                            intf_config_dict['port_prio'] = each_intf_config.get('port-priority')
+                            intf_config_dict['name'] = each_intf_config.get(
+                                'interface-name')
+                            intf_config_dict['port_prio'] = each_intf_config.get(
+                                'port-priority')
                             intf_config_list.append(intf_config_dict)
                         each_lag['interface'] = intf_config_list
 

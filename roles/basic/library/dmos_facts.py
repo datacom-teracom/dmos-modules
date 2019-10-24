@@ -129,6 +129,24 @@ EXAMPLES = """
 - dmos_facts:
     gather_subset: min
     gather_network_resources: linkagg
+
+# Collect only the l2_interface facts
+- dmos_facts:
+    gather_subset:
+      - !all
+      - !min
+    gather_network_resources:
+      - l2_interface
+
+# Do not collect l2_interface facts
+- dmos_facts:
+    gather_network_resources:
+      - "!l2_interface"
+
+# Collect l2_interface and minimal default facts
+- dmos_facts:
+    gather_subset: min
+    gather_network_resources: l2_interface
 """
 
 RETURN = """

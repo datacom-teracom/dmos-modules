@@ -23,6 +23,7 @@ class FactsArgs(object):  # pylint: disable=R0903
         'linkagg',
         'l2_interface',
         'lldp',
+        'l3_interface',
     ]
 
     argument_spec = {

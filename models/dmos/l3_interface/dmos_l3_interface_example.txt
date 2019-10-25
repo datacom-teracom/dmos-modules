@@ -1,0 +1,34 @@
+# Using Present
+
+<placeholder for the configuration example prior to module invocation>
+
+- name: Configure L3 Interface
+  dmos_l3_interface:
+    config:
+      - name: test
+        description: Hello World
+        ip_mtu: 1280
+        lower_layer_if: 1
+        vlan_link_detect: true
+        ipv4:
+          address: 192.168.2.1/24
+          secondary:
+            - 192.168.1.1/24
+        ipv6:
+          address:
+            - 2018::01/64
+            - 2019::02/64
+          enable: true
+          nd_ra:
+            lifetime: 700
+            max_interval: 600
+            min_interval: 198
+            mtu_suppress: true
+            prefix:
+              - ip: 2018::/64
+                no_advertise: false
+                no_autoconfig: true
+                off_link: false
+            suppress: false
+
+<placeholder for the configuration example after module invocation>

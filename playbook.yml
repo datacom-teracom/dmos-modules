@@ -3,4 +3,5 @@
   remote_user: admin
   connection: network_cli
   roles:
+    - dmos
     - basic

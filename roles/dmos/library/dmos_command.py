@@ -28,17 +28,28 @@ def main():
     """
     argument_spec = dict(
         commands=dict(type='list', required=True),
+        match=dict(type='str', choices=['exact']),
+        lines=dict(type='list'),
     )
 
     argument_spec.update(dmos_argument_spec)
 
+    required_if = [('match', 'exact', ['lines'])]
+
     module = AnsibleModule(argument_spec=argument_spec,
+                           required_if=required_if,
                            supports_check_mode=True)
 
     warnings = list()
     commands = parse_commands(module, warnings)
 
     responses = run_commands(module, commands)
+
+    if module.params['match']:
+        for line in module.params['lines']:
+            if line not in responses:
+                module.fail_json(msg="didn't match the lines")
+                return
 
     result = {'changed': False, 'warnings': warnings}
     result.update({

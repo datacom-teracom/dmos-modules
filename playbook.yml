@@ -4,4 +4,5 @@
   connection: network_cli
   roles:
     - dmos
-    - basic
+    # - basic
+    - tests

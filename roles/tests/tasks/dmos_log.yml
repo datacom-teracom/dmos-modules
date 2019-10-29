@@ -1,0 +1,90 @@
+################################# Merged State ################################
+
+- name: Set the expected response as a fact (merged)
+  set_fact:
+    expected_response:
+      before:
+        - severity: informational
+          syslog: null
+      after:
+        - severity: informational
+          syslog: null
+      changed: true
+      commands:
+        - log severity alert
+        - log syslog 192.168.1.1
+        - log syslog 192.168.2.1
+      failed: false
+- name: Check for correct argspec and state (merged)
+  dmos_log:
+    config:
+      - syslog:
+          - 192.168.1.1
+          - 192.168.2.1
+        severity: alert
+    state: merged
+  check_mode: yes
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response (merged)
+  assert:
+    that: "{{ result == expected_response }}"
+
+################################ Deleted state ################################
+
+- name: Set the expected response as a fact (deleted)
+  set_fact:
+    expected_response:
+      before:
+        - severity: informational
+          syslog: null
+      after:
+        - severity: informational
+          syslog: null
+      changed: true
+      commands:
+        - no log severity
+      failed: false
+- name: Check for correct argspec and state (deleted)
+  dmos_log:
+    config:
+      - syslog:
+          - 192.168.1.1
+          - 192.168.2.1
+        severity: alert
+    state: deleted
+  check_mode: yes
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response (deleted)
+  assert:
+    that: "{{ result == expected_response }}"
+
+#------------------------------------------------------------------------------
+
+- name: Set the expected response as a fact (deleted all nodes)
+  set_fact:
+    expected_response:
+      before:
+        - severity: informational
+          syslog: null
+      after:
+        - severity: informational
+          syslog: null
+      changed: true
+      commands:
+        - no log
+      failed: false
+- name: Check for correct argspec and state (deleted all nodes)
+  dmos_log:
+    config: []
+    state: deleted
+  check_mode: yes
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response (deleted all nodes)
+  assert:
+    that: "{{ result == expected_response }}"

@@ -1,0 +1,3 @@
+- include: "{{ item }}"
+  loop:
+  - dmos_log.yml

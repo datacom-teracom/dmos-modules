@@ -160,7 +160,7 @@ class L3_interface(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        differ = DictDiffer(have, want, {'name': 0, 'ip': 2})
+        differ = DictDiffer(have, want, {'name': [0], 'ip': [2]})
 
         dict_diff = differ.deepdiff()
         for diff in dict_diff:
@@ -285,7 +285,7 @@ class L3_interface(ConfigBase):
         if not want and have:
             return ['no interface l3']
 
-        differ = DictDiffer(have, want, {'name': 0, 'ip': 2})
+        differ = DictDiffer(have, want, {'name': [0], 'ip': [2]})
         dict_intsec = differ.deepintersect()
 
         for diff in dict_intsec:

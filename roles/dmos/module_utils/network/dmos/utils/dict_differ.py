@@ -41,7 +41,7 @@ class DictDiffer():
                             common_keys = set(
                                 self._config_keys) & set(value[i])
                             for k in common_keys:
-                                if self._config_keys[k] == level:
+                                if level in self._config_keys[k]:
                                     aux['id__{}__{}'.format(
                                         k, value[i][k])] = value[i]
                     value = aux

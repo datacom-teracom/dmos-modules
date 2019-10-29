@@ -18,6 +18,7 @@ from ansible.module_utils.network.dmos.facts.linkagg.linkagg import LinkaggFacts
 from ansible.module_utils.network.dmos.facts.l2_interface.l2_interface import L2_interfaceFacts
 from ansible.module_utils.network.dmos.facts.lldp.lldp import LldpFacts
 from ansible.module_utils.network.dmos.facts.l3_interface.l3_interface import L3_interfaceFacts
+from ansible.module_utils.network.dmos.facts.user.user import UserFacts
 
 
 FACT_LEGACY_SUBSETS = {}
@@ -29,6 +30,7 @@ FACT_RESOURCE_SUBSETS = dict(
     l2_interface=L2_interfaceFacts,
     lldp=LldpFacts,
     l3_interface=L3_interfaceFacts,
+    user=UserFacts,
 )
 
 

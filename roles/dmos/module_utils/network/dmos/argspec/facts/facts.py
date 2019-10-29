@@ -24,6 +24,7 @@ class FactsArgs(object):  # pylint: disable=R0903
         'l2_interface',
         'lldp',
         'l3_interface',
+        'user',
     ]
 
     argument_spec = {

@@ -159,7 +159,7 @@ class Sntp(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        differ = DictDiffer(have, want, {'id': 0, 'address': 0})
+        differ = DictDiffer(have, want, {'id': [0], 'address': [0]})
         dict_diff = differ.deepdiff()
 
         auth = dict_diff.get('auth')
@@ -231,7 +231,7 @@ class Sntp(ConfigBase):
         if not want and have:
             return ['no sntp']
 
-        differ = DictDiffer(have, want, {'id': 0, 'address': 0})
+        differ = DictDiffer(have, want, {'id': [0], 'address': [0]})
         dict_intsec = differ.deepintersect()
 
         auth = dict_intsec.get('auth')

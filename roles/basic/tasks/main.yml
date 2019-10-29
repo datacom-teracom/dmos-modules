@@ -1,5 +1,12 @@
-- name: Configure logs
-  dmos_log:
-    config:
-      - syslog: 192.168.1.1
-        severity: alert
+---
+- name: DmOS Facts
+  dmos_facts:
+    gather_network_resources:
+      - l2_interface
+      - l3_interface
+      - linkagg
+      - lldp
+      - log
+      - sntp
+      - user
+      - vlan

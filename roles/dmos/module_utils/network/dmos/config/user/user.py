@@ -4,7 +4,7 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 """
-The dmos_l2_interface class
+The dmos_user class
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to it's desired end-state is
@@ -16,9 +16,9 @@ from ansible.module_utils.network.dmos.facts.facts import Facts
 from ansible.module_utils.network.dmos.utils.dict_differ import DictDiffer
 
 
-class L2_interface(ConfigBase):
+class User(ConfigBase):
     """
-    The dmos_l2_interface class
+    The dmos_user class
     """
 
     gather_subset = [
@@ -27,25 +27,23 @@ class L2_interface(ConfigBase):
     ]
 
     gather_network_resources = [
-        'l2_interface',
+        'user',
     ]
 
     def __init__(self, module):
-        super(L2_interface, self).__init__(module)
+        super(User, self).__init__(module)
 
-    def get_l2_interface_facts(self):
+    def get_user_facts(self):
         """ Get the 'facts' (the current configuration)
 
         :rtype: A dictionary
         :returns: The current configuration as a dictionary
         """
-        facts, _warnings = Facts(self._module).get_facts(
-            self.gather_subset, self.gather_network_resources)
-        l2_interface_facts = facts['ansible_network_resources'].get(
-            'l2_interface')
-        if not l2_interface_facts:
+        facts, _warnings = Facts(self._module).get_facts(self.gather_subset, self.gather_network_resources)
+        user_facts = facts['ansible_network_resources'].get('user')
+        if not user_facts:
             return []
-        return l2_interface_facts
+        return user_facts
 
     def execute_module(self):
         """ Execute the module
@@ -57,8 +55,8 @@ class L2_interface(ConfigBase):
         warnings = list()
         commands = list()
 
-        existing_l2_interface_facts = self.get_l2_interface_facts()
-        commands.extend(self.set_config(existing_l2_interface_facts))
+        existing_user_facts = self.get_user_facts()
+        commands.extend(self.set_config(existing_user_facts))
         if commands:
             if not self._module.check_mode:
                 response = self._connection.edit_config(commands)
@@ -68,16 +66,16 @@ class L2_interface(ConfigBase):
             result['changed'] = True
         result['commands'] = commands
 
-        changed_l2_interface_facts = self.get_l2_interface_facts()
+        changed_user_facts = self.get_user_facts()
 
-        result['before'] = existing_l2_interface_facts
+        result['before'] = existing_user_facts
         if result['changed']:
-            result['after'] = changed_l2_interface_facts
+            result['after'] = changed_user_facts
 
         result['warnings'] = warnings
         return result
 
-    def set_config(self, existing_l2_interface_facts):
+    def set_config(self, existing_user_facts):
         """ Collect the configuration from the args passed to the module,
             collect the current configuration (as a dict from facts)
 
@@ -86,7 +84,7 @@ class L2_interface(ConfigBase):
                   to the desired configuration
         """
         want = self._module.params['config']
-        have = existing_l2_interface_facts
+        have = existing_user_facts
         resp = self.set_state(want, have)
         return to_list(resp)
 
@@ -109,7 +107,6 @@ class L2_interface(ConfigBase):
         elif state == 'replaced':
             commands = self._state_replaced(want, have)
         return commands
-
     def _state_replaced(self, want, have):
         """ The command generator when state is replaced
 
@@ -151,97 +148,80 @@ class L2_interface(ConfigBase):
                   of the provided objects
         """
         commands = []
-        want = want if want else []
-        have = have if have else []
-        commands.extend(self._delete_config(want, have))
+        if want:
+            have = have if have else []
+            commands.extend(self._delete_config(want, have))
         return commands
 
     def _set_config(self, want, have):
-        # Set the interface config based on the want and have config
         commands = []
 
-        differ = DictDiffer(have, want, {'interface_name': [0], 'traffic': [1]})
+        differ = DictDiffer(have, want, {'name':[0, 1]})
 
         dict_diff = differ.deepdiff()
-        for diff in dict_diff:
-            interface_name = diff.get('interface_name')
-            switchport_cmd = 'switchport interface {0}'.format(interface_name)
 
-            if len(diff) == 1:
-                commands.append(switchport_cmd)
-                continue
-
-            native_vlan_id = diff.get('native_vlan_id')
-            if native_vlan_id != None:
-                commands.append(
-                    '{0} native-vlan vlan-id {1}'.format(switchport_cmd, native_vlan_id))
-
-            qinq = diff.get('qinq')
-            if qinq != None:
-                commands.append(
-                    '{0} {1} qinq'.format('' if qinq else 'no', switchport_cmd))
-
-            storm_control = diff.get('storm_control')
-            if storm_control != None:
-                for each in storm_control:
-                    each = dict(each)
-                    traffic = each.get('traffic')
-                    percent = each.get('percent')
-                    storm_control_cmd = '{0} storm-control {1} {2}'.format(
-                        switchport_cmd, traffic, percent)
-
-                    commands.append(storm_control_cmd)
-
-            tpid = diff.get('tpid')
-            if tpid != None:
-                commands.append(
-                    '{0} tpid {1}'.format(switchport_cmd, tpid))
-
+        for user_config in dict_diff:
+            cmd = ''
+            name = user_config.get('name')
+            if name is not None:
+                cmd = 'user {}'.format(name)
+            alias = user_config.get('alias')
+            if alias is not None:
+                for each in alias:
+                    alias_name = each.get('name')
+                    expansion = each.get('expansion')
+                    if alias_name is None:
+                        continue
+                    temp_cmd = '{} alias {}'.format(cmd, alias_name)
+                    if expansion is not None:
+                        temp_cmd = '{} expansion {}'.format(temp_cmd, expansion)
+                    commands.append(temp_cmd)
+            
+            description = user_config.get('description')
+            if description is not None:
+                commands.append('{} description {}'.format(cmd, description))
+            session = user_config.get('session')
+            if session is not None:
+                for key, value in session.items():
+                    if isinstance(value, bool):
+                        value = str(value).lower()
+                    commands.append('{} session {} {}'.format(cmd, key.replace('_', '-'), value))                
+            
         return commands
-
+    
     def _delete_config(self, want, have):
-        # Set the interface config based on the want and have config
         commands = []
 
         if not want and have:
-            return ['no switchport']
-
-        differ = DictDiffer(have, want, {'interface_name': [0], 'traffic': [1]})
+            return ['no user']
+        
+        differ = DictDiffer(have, want, {'name':[0, 1]})
         dict_intsec = differ.deepintersect()
-
-        for diff in dict_intsec:
-            interface_name = diff.get('interface_name')
-            switchport_cmd = 'no switchport interface {0}'.format(
-                interface_name)
-
-            switchport_n_keys = diff.get('n_keys')
-            if switchport_n_keys == 1:
-                commands.append(switchport_cmd)
+        for user in dict_intsec:
+            name = user.get('name')
+            if name is None:
                 continue
-
-            native_vlan_id = diff.get('native_vlan_id')
-            if native_vlan_id != None:
-                commands.append(
-                    '{0} native-vlan'.format(switchport_cmd))
-
-            qinq = diff.get('qinq')
-            if qinq != None:
-                commands.append(
-                    '{0} qinq'.format(switchport_cmd))
-
-            storm_control = diff.get('storm_control')
-            if storm_control != None:
-                for each in storm_control:
-                    each = dict(each)
-                    traffic = each.get('traffic')
-                    storm_control_cmd = '{0} storm-control {1}'.format(
-                        switchport_cmd, traffic)
-
-                    commands.append(storm_control_cmd)
-
-            tpid = diff.get('tpid')
-            if tpid != None:
-                commands.append(
-                    '{0} tpid'.format(switchport_cmd))
-
+            no_user_cmd = 'no user {}'.format(name)
+            if user.get('n_keys') == 1:
+                commands.append(no_user_cmd)
+                continue
+            alias = user.get('alias')
+            if alias is not None:
+                for each in alias:
+                    alias_name = each.get('name')
+                    if alias_name is None:
+                        continue
+                    temp_cmd = '{} alias {}'.format(no_user_cmd, alias_name)
+                    commands.append(temp_cmd)
+            
+            description = user.get('description')
+            if description is not None:
+                commands.append('{} description'.format(no_user_cmd))
+            session = user.get('session')
+            if session is not None:
+                for key in session.keys():
+                    if key == 'n_keys':
+                        continue
+                    commands.append('{} session {}'.format(no_user_cmd, key.replace('_', '-')))
+            
         return commands

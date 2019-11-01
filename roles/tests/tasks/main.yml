@@ -1,4 +1,4 @@
 - include: "{{ item }}"
   loop:
-  # - dmos_log.yml
-  - dmos_user.yml
+  - dmos_log.yml
+  - dmos_vlan.yml

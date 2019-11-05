@@ -1,0 +1,243 @@
+################################# Test Setup ##################################
+
+- name: Test setup (deleting linkagg configuration)
+  dmos_linkagg:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ not result.get('after') }}"
+
+################################# Merged State ################################
+
+- name: Set the expected response as a fact (merged)
+  set_fact:
+    expected_response:
+      after:
+        - lag:
+          - lag_id: 1
+            admin_status: up
+            description: Hello World
+            load_balance: dst-ip
+            interface:
+              - name: gigabit-ethernet-1/1/1
+                port_prio: 12
+              - name: gigabit-ethernet-1/1/3
+                port_prio: 15
+            max_active: 4
+            min_active: 3
+            mode: active
+            period: long
+          - lag_id: 2
+            admin_status: down
+            description: Hey Jude
+            load_balance: enhanced
+            interface:
+              - name: gigabit-ethernet-1/1/2
+                port_prio: 113
+              - name: gigabit-ethernet-1/1/5
+                port_prio: 32768
+            max_active: 2
+            min_active: 1
+            mode: passive
+            period: short
+          sys_prio: 400
+      before: []
+      changed: true
+      commands:
+        - link-aggregation system-priority 400
+        - link-aggregation interface lag 1 administrative-status up
+        - link-aggregation interface lag 1 description "Hello World"
+        - link-aggregation interface lag 1 interface gigabit-ethernet-1/1/1 port-priority 12
+        - link-aggregation interface lag 1 interface gigabit-ethernet-1/1/3 port-priority 15
+        - link-aggregation interface lag 1 load-balance dst-ip
+        - link-aggregation interface lag 1 maximum-active links 4
+        - link-aggregation interface lag 1 minimum-active links 3
+        - link-aggregation interface lag 1 mode active
+        - link-aggregation interface lag 1 period long
+        - link-aggregation interface lag 2 administrative-status down
+        - link-aggregation interface lag 2 description "Hey Jude"
+        - link-aggregation interface lag 2 interface gigabit-ethernet-1/1/2 port-priority 113
+        - link-aggregation interface lag 2 interface gigabit-ethernet-1/1/5
+        - link-aggregation interface lag 2 load-balance enhanced
+        - link-aggregation interface lag 2 maximum-active links 2
+        - link-aggregation interface lag 2 minimum-active links 1
+        - link-aggregation interface lag 2 mode passive
+        - link-aggregation interface lag 2 period short
+      failed: false
+      response: []
+- name: Check for correct argspec and state (merged)
+  dmos_linkagg:
+    config:
+      - lag:
+        - lag_id: 1
+          admin_status: up
+          description: Hello World
+          load_balance: dst-ip
+          interface:
+            - name: gigabit-ethernet-1/1/1
+              port_prio: 12
+            - name: gigabit-ethernet-1/1/3
+              port_prio: 15
+          max_active: 4
+          min_active: 3
+          mode: active
+          period: long
+        - lag_id: 2
+          admin_status: down
+          description: Hey Jude
+          load_balance: enhanced
+          interface:
+            - name: gigabit-ethernet-1/1/2
+              port_prio: 113
+            - name: gigabit-ethernet-1/1/5
+          max_active: 2
+          min_active: 1
+          mode: passive
+          period: short
+        sys_prio: 400
+    state: merged
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response (merged)
+  assert:
+    that: "{{ result == expected_response }}"
+
+################################ Deleted state ################################
+
+- name: Set the expected response as a fact (deleted)
+  set_fact:
+    expected_response:
+      after:
+        - lag:
+          - lag_id: 1
+            admin_status: up
+            description: null
+            load_balance: enhanced
+            interface:
+              - name: gigabit-ethernet-1/1/1
+                port_prio: 32768
+              - name: gigabit-ethernet-1/1/3
+                port_prio: 32768
+            max_active: 4
+            min_active: 1
+            mode: static
+            period: long
+          - lag_id: 2
+            admin_status: up
+            description: null
+            load_balance: enhanced
+            interface:
+              - name: gigabit-ethernet-1/1/2
+                port_prio: 32768
+            max_active: 4
+            min_active: 1
+            mode: static
+            period: long
+          sys_prio: 32768
+      before:
+        - lag:
+          - lag_id: 1
+            admin_status: up
+            description: Hello World
+            load_balance: dst-ip
+            interface:
+              - name: gigabit-ethernet-1/1/1
+                port_prio: 12
+              - name: gigabit-ethernet-1/1/3
+                port_prio: 15
+            max_active: 4
+            min_active: 3
+            mode: active
+            period: long
+          - lag_id: 2
+            admin_status: down
+            description: Hey Jude
+            load_balance: enhanced
+            interface:
+              - name: gigabit-ethernet-1/1/2
+                port_prio: 113
+              - name: gigabit-ethernet-1/1/5
+                port_prio: 32768
+            max_active: 2
+            min_active: 1
+            mode: passive
+            period: short
+          sys_prio: 400
+      changed: true
+      commands:
+        - no link-aggregation system-priority
+        - no link-aggregation interface lag 1 administrative-status
+        - no link-aggregation interface lag 1 description
+        - no link-aggregation interface lag 1 interface gigabit-ethernet-1/1/3 port-priority
+        - no link-aggregation interface lag 1 interface gigabit-ethernet-1/1/1 port-priority
+        - no link-aggregation interface lag 1 load-balance
+        - no link-aggregation interface lag 1 maximum-active
+        - no link-aggregation interface lag 1 minimum-active
+        - no link-aggregation interface lag 1 mode
+        - no link-aggregation interface lag 1 period
+        - no link-aggregation interface lag 2 administrative-status
+        - no link-aggregation interface lag 2 description
+        - no link-aggregation interface lag 2 interface gigabit-ethernet-1/1/5
+        - no link-aggregation interface lag 2 interface gigabit-ethernet-1/1/2 port-priority
+        - no link-aggregation interface lag 2 load-balance
+        - no link-aggregation interface lag 2 maximum-active
+        - no link-aggregation interface lag 2 minimum-active
+        - no link-aggregation interface lag 2 mode
+        - no link-aggregation interface lag 2 period
+      failed: false
+      response: []
+- name: Check for correct argspec and state (deleted)
+  dmos_linkagg:
+    config:
+      - lag:
+        - lag_id: 1
+          admin_status: up
+          description: Hello World
+          load_balance: dst-ip
+          interface:
+            - name: gigabit-ethernet-1/1/1
+              port_prio: 12
+            - name: gigabit-ethernet-1/1/3
+              port_prio: 15
+          max_active: 4
+          min_active: 3
+          mode: active
+          period: long
+        - lag_id: 2
+          admin_status: down
+          description: Hey Jude
+          load_balance: enhanced
+          interface:
+            - name: gigabit-ethernet-1/1/2
+              port_prio: 113
+            - name: gigabit-ethernet-1/1/5
+          max_active: 2
+          min_active: 1
+          mode: passive
+          period: short
+        sys_prio: 400
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response (deleted)
+  assert:
+    that: "{{ result == expected_response }}"
+
+################################ Test Teardown ################################
+
+- name: Test teardown (deleting linkagg configuration)
+  dmos_linkagg:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ not result.get('after') }}"

@@ -1,14 +1,6 @@
 ################################# Test Setup ##################################
 
 - name: Test setup (deleting switchport configuration)
-  set_fact:
-    expected_response:
-      after: null
-      changed: true
-      commands:
-        - no switchport
-      failed: false
-- name: Check for correct argspec and state
   dmos_l2_interface:
     config: []
     state: deleted
@@ -17,17 +9,9 @@
     var: result
 - name: Compare the module result to the expected response
   assert:
-    that: "{{ result.get('after') == expected_response.get('after') }}"
+    that: "{{ not result.get('after') }}"
 
 - name: Test setup (deleting vlan configuration)
-  set_fact:
-    expected_response:
-      after: null
-      changed: true
-      commands:
-        - no dot1q
-      failed: false
-- name: Check for correct argspec and state
   dmos_vlan:
     config: []
     state: deleted
@@ -36,7 +20,7 @@
     var: result
 - name: Compare the module result to the expected response
   assert:
-    that: "{{ result.get('after') == expected_response.get('after') }}"
+    that: "{{ not result.get('after') }}"
 
 - name: Test setup (creating vlans)
   set_fact:
@@ -237,14 +221,6 @@
 ################################ Test Teardown ################################
 
 - name: Test teardown (deleting switchport configuration)
-  set_fact:
-    expected_response:
-      after: []
-      changed: true
-      commands:
-        - no switchport
-      failed: false
-- name: Check for correct argspec and state
   dmos_l2_interface:
     config: []
     state: deleted
@@ -253,17 +229,9 @@
     var: result
 - name: Compare the module result to the expected response
   assert:
-    that: "{{ result.get('after') == expected_response.get('after') }}"
+    that: "{{ not result.get('after') }}"
 
 - name: Test teardown (deleting vlan configuration)
-  set_fact:
-    expected_response:
-      after: []
-      changed: true
-      commands:
-        - no dot1q
-      failed: false
-- name: Check for correct argspec and state
   dmos_vlan:
     config: []
     state: deleted
@@ -272,4 +240,4 @@
     var: result
 - name: Compare the module result to the expected response
   assert:
-    that: "{{ result.get('after') == expected_response.get('after') }}"
+    that: "{{ not result.get('after') }}"

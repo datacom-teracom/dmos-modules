@@ -212,7 +212,7 @@ class L3_interface(ConfigBase):
                 enable = ipv6.get('enable')
                 if enable != None:
                     commands.append('{0} {1} ipv6 enable'.format(
-                        '' if enable else 'no', intf_cmd))
+                        '' if enable else 'no', intf_cmd).strip())
 
                 address = ipv6.get('address')
                 if address != None:
@@ -254,27 +254,27 @@ class L3_interface(ConfigBase):
                             no_advertise = each.get('no_advertise')
                             if no_advertise != None:
                                 commands.append(
-                                    '{0} {1} no-advertise'.format('' if no_advertise else 'no', prefix_cmd))
+                                    '{0} {1} no-advertise'.format('' if no_advertise else 'no', prefix_cmd).strip())
 
                             no_autoconfig = each.get('no_autoconfig')
                             if no_autoconfig != None:
                                 commands.append(
-                                    '{0} {1} no-autoconfig'.format('' if no_autoconfig else 'no', prefix_cmd))
+                                    '{0} {1} no-autoconfig'.format('' if no_autoconfig else 'no', prefix_cmd).strip())
 
                             off_link = each.get('off_link')
                             if off_link != None:
                                 commands.append(
-                                    '{0} {1} off-link'.format('' if off_link else 'no', prefix_cmd))
+                                    '{0} {1} off-link'.format('' if off_link else 'no', prefix_cmd).strip())
 
                     suppress = nd_ra.get('suppress')
                     if suppress != None:
                         commands.append('{0} {1} suppress'.format(
-                            '' if suppress else 'no', nd_ra_cmd))
+                            '' if suppress else 'no', nd_ra_cmd).strip())
 
                     mtu_suppress = nd_ra.get('mtu_suppress')
                     if mtu_suppress != None:
                         commands.append('{0} {1} mtu suppress'.format(
-                            '' if mtu_suppress else 'no', nd_ra_cmd))
+                            '' if mtu_suppress else 'no', nd_ra_cmd).strip())
 
         return commands
 
@@ -309,9 +309,10 @@ class L3_interface(ConfigBase):
             if lower_layer_if != None:
                 commands.append('{0} lower-layer-if vlan'.format(intf_cmd))
 
-            vlan_link_detect = diff.get('vlan_link_detect')
-            if vlan_link_detect != None:
-                commands.append('{0} vlan-link-detect'.format(intf_cmd))
+            # Ignoring vlan link detect deletion since its not possible, always returns error
+            # vlan_link_detect = diff.get('vlan_link_detect')
+            # if vlan_link_detect != None:
+            #     commands.append('{0} vlan-link-detect'.format(intf_cmd))
 
             vrf = diff.get('vrf')
             if vrf != None:
@@ -332,10 +333,6 @@ class L3_interface(ConfigBase):
 
             ipv6 = diff.get('ipv6')
             if ipv6 != None:
-                enable = ipv6.get('enable')
-                if enable != None:
-                    commands.append('{0} ipv6 enable'.format(intf_cmd))
-
                 address = ipv6.get('address')
                 if address != None:
                     for each in address:
@@ -393,5 +390,9 @@ class L3_interface(ConfigBase):
                     mtu_suppress = nd_ra.get('mtu_suppress')
                     if mtu_suppress != None:
                         commands.append('{0} mtu suppress'.format(nd_ra_cmd))
+
+                enable = ipv6.get('enable')
+                if enable != None:
+                    commands.append('{0} ipv6 enable'.format(intf_cmd))
 
         return commands

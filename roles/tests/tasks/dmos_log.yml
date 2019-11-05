@@ -6,10 +6,6 @@
       after:
         - severity: informational
           syslog: null
-      changed: true
-      commands:
-        - no log
-      failed: false
 - name: Check for correct argspec and state
   dmos_log:
     config: []
@@ -99,10 +95,6 @@
       after:
         - severity: informational
           syslog: null
-      changed: true
-      commands:
-        - no log
-      failed: false
 - name: Check for correct argspec and state
   dmos_log:
     config: []

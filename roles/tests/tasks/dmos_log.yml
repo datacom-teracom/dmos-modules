@@ -1,12 +1,37 @@
+################################# Test Setup ##################################
+
+- name: Test setup (deleting log configuration)
+  set_fact:
+    expected_response:
+      after:
+        - severity: informational
+          syslog: null
+      changed: true
+      commands:
+        - no log
+      failed: false
+- name: Check for correct argspec and state
+  dmos_log:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ result.get('after') == expected_response.get('after') }}"
+
 ################################# Merged State ################################
 
 - name: Set the expected response as a fact (merged)
   set_fact:
     expected_response:
-      before:
-        - severity: informational
-          syslog: null
       after:
+        - severity: alert
+          syslog:
+            - 192.168.1.1
+            - 192.168.2.1
+      before:
         - severity: informational
           syslog: null
       changed: true
@@ -15,6 +40,7 @@
         - log syslog 192.168.1.1
         - log syslog 192.168.2.1
       failed: false
+      response: []
 - name: Check for correct argspec and state (merged)
   dmos_log:
     config:
@@ -23,7 +49,6 @@
           - 192.168.2.1
         severity: alert
     state: merged
-  check_mode: yes
   register: result
 - debug:
     var: result
@@ -36,16 +61,21 @@
 - name: Set the expected response as a fact (deleted)
   set_fact:
     expected_response:
-      before:
-        - severity: informational
-          syslog: null
       after:
         - severity: informational
           syslog: null
+      before:
+        - severity: alert
+          syslog:
+            - 192.168.1.1
+            - 192.168.2.1
       changed: true
       commands:
         - no log severity
+        - no log syslog 192.168.2.1
+        - no log syslog 192.168.1.1
       failed: false
+      response: []
 - name: Check for correct argspec and state (deleted)
   dmos_log:
     config:
@@ -54,7 +84,6 @@
           - 192.168.2.1
         severity: alert
     state: deleted
-  check_mode: yes
   register: result
 - debug:
     var: result
@@ -62,14 +91,11 @@
   assert:
     that: "{{ result == expected_response }}"
 
-#------------------------------------------------------------------------------
+################################ Test Teardown ################################
 
-- name: Set the expected response as a fact (deleted all nodes)
+- name: Test Teardown (deleting log configuration)
   set_fact:
     expected_response:
-      before:
-        - severity: informational
-          syslog: null
       after:
         - severity: informational
           syslog: null
@@ -77,14 +103,13 @@
       commands:
         - no log
       failed: false
-- name: Check for correct argspec and state (deleted all nodes)
+- name: Check for correct argspec and state
   dmos_log:
     config: []
     state: deleted
-  check_mode: yes
   register: result
 - debug:
     var: result
-- name: Compare the module result to the expected response (deleted all nodes)
+- name: Compare the module result to the expected response
   assert:
-    that: "{{ result == expected_response }}"
+    that: "{{ result.get('after') == expected_response.get('after') }}"

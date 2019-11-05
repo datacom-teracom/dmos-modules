@@ -1,0 +1,275 @@
+################################# Test Setup ##################################
+
+- name: Test setup (deleting switchport configuration)
+  set_fact:
+    expected_response:
+      after: null
+      changed: true
+      commands:
+        - no switchport
+      failed: false
+- name: Check for correct argspec and state
+  dmos_l2_interface:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ result.get('after') == expected_response.get('after') }}"
+
+- name: Test setup (deleting vlan configuration)
+  set_fact:
+    expected_response:
+      after: null
+      changed: true
+      commands:
+        - no dot1q
+      failed: false
+- name: Check for correct argspec and state
+  dmos_vlan:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ result.get('after') == expected_response.get('after') }}"
+
+- name: Test setup (creating vlans)
+  set_fact:
+    expected_response:
+      after:
+        - vlan_id: 10
+          interface: null
+          name: null
+        - vlan_id: 12
+          interface: null
+          name: null
+      before: []
+      changed: true
+      commands:
+        - dot1q vlan 10
+        - dot1q vlan 12
+      failed: false
+      response: []
+- name: Check for correct argspec and state
+  dmos_vlan:
+    config:
+      - vlan_id: 10
+      - vlan_id: 12
+    state: merged
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ result == expected_response }}"
+
+################################# Merged State ################################
+
+- name: Set the expected response as a fact (merged)
+  set_fact:
+    expected_response:
+      after:
+        - interface_name: gigabit-ethernet-1/1/1
+          native_vlan_id: 12
+          qinq: false
+          storm_control:
+            - traffic: broadcast
+              percent: 1.0
+            - traffic: multicast
+              percent: 1.0
+            - traffic: unicast
+              percent: 1.0
+          tpid: '0x9100'
+        - interface_name: gigabit-ethernet-1/1/6
+          native_vlan_id: 10
+          qinq: true
+          storm_control:
+            - traffic: broadcast
+              percent: 10.1
+            - traffic: multicast
+              percent: 59.5
+            - traffic: unicast
+              percent: 0.1
+          tpid: '0x88a8'
+      before: []
+      changed: true
+      commands:
+        - switchport interface gigabit-ethernet-1/1/1 native-vlan vlan-id 12
+        - no switchport interface gigabit-ethernet-1/1/1 qinq
+        - switchport interface gigabit-ethernet-1/1/1 storm-control broadcast 1.0
+        - switchport interface gigabit-ethernet-1/1/1 storm-control multicast 1.0
+        - switchport interface gigabit-ethernet-1/1/1 storm-control unicast 1.0
+        - switchport interface gigabit-ethernet-1/1/1 tpid 0x9100
+        - switchport interface gigabit-ethernet-1/1/6 native-vlan vlan-id 10
+        - switchport interface gigabit-ethernet-1/1/6 qinq
+        - switchport interface gigabit-ethernet-1/1/6 storm-control broadcast 10.1
+        - switchport interface gigabit-ethernet-1/1/6 storm-control multicast 59.5
+        - switchport interface gigabit-ethernet-1/1/6 storm-control unicast 0.1
+        - switchport interface gigabit-ethernet-1/1/6 tpid 0x88a8
+      failed: false
+      response: []
+- name: Check for correct argspec and state (merged)
+  dmos_l2_interface:
+    config:
+      - interface_name: gigabit-ethernet-1/1/6
+        native_vlan_id: 10
+        qinq: true
+        storm_control:
+          - traffic: broadcast
+            percent: 10.1
+          - traffic: multicast
+            percent: 59.5
+          - traffic: unicast
+            percent: 0.1
+        tpid: '0x88a8'
+      - interface_name: gigabit-ethernet-1/1/1
+        native_vlan_id: 12
+        qinq: false
+        storm_control:
+          - traffic: broadcast
+            percent: 1.0
+          - traffic: multicast
+            percent: 1.0
+          - traffic: unicast
+            percent: 1.0
+        tpid: '0x9100'
+    state: merged
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response (merged)
+  assert:
+    that: "{{ result == expected_response }}"
+
+################################ Deleted state ################################
+
+- name: Set the expected response as a fact (deleted)
+  set_fact:
+    expected_response:
+      after:
+        - interface_name: gigabit-ethernet-1/1/1
+          native_vlan_id: null
+          qinq: false
+          storm_control: null
+          tpid: '0x8100'
+        - interface_name: gigabit-ethernet-1/1/6
+          native_vlan_id: null
+          qinq: false
+          storm_control: null
+          tpid: '0x8100'
+      before:
+        - interface_name: gigabit-ethernet-1/1/1
+          native_vlan_id: 12
+          qinq: false
+          storm_control:
+            - traffic: broadcast
+              percent: 1.0
+            - traffic: multicast
+              percent: 1.0
+            - traffic: unicast
+              percent: 1.0
+          tpid: '0x9100'
+        - interface_name: gigabit-ethernet-1/1/6
+          native_vlan_id: 10
+          qinq: true
+          storm_control:
+            - traffic: broadcast
+              percent: 10.1
+            - traffic: multicast
+              percent: 59.5
+            - traffic: unicast
+              percent: 0.1
+          tpid: '0x88a8'
+      changed: true
+      commands:
+        - no switchport interface gigabit-ethernet-1/1/1 native-vlan
+        - no switchport interface gigabit-ethernet-1/1/1 qinq
+        - no switchport interface gigabit-ethernet-1/1/1 storm-control broadcast
+        - no switchport interface gigabit-ethernet-1/1/1 storm-control multicast
+        - no switchport interface gigabit-ethernet-1/1/1 storm-control unicast
+        - no switchport interface gigabit-ethernet-1/1/1 tpid
+        - no switchport interface gigabit-ethernet-1/1/6 native-vlan
+        - no switchport interface gigabit-ethernet-1/1/6 qinq
+        - no switchport interface gigabit-ethernet-1/1/6 storm-control broadcast
+        - no switchport interface gigabit-ethernet-1/1/6 storm-control multicast
+        - no switchport interface gigabit-ethernet-1/1/6 storm-control unicast
+        - no switchport interface gigabit-ethernet-1/1/6 tpid
+      failed: false
+      response: []
+- name: Check for correct argspec and state (deleted)
+  dmos_l2_interface:
+    config:
+      - interface_name: gigabit-ethernet-1/1/6
+        native_vlan_id: 10
+        qinq: true
+        storm_control:
+          - traffic: broadcast
+            percent: 10.1
+          - traffic: multicast
+            percent: 59.5
+          - traffic: unicast
+            percent: 0.1
+        tpid: '0x88a8'
+      - interface_name: gigabit-ethernet-1/1/1
+        native_vlan_id: 12
+        qinq: false
+        storm_control:
+          - traffic: broadcast
+            percent: 1.0
+          - traffic: multicast
+            percent: 1.0
+          - traffic: unicast
+            percent: 1.0
+        tpid: '0x9100'
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response (deleted)
+  assert:
+    that: "{{ result == expected_response }}"
+
+################################ Test Teardown ################################
+
+- name: Test teardown (deleting switchport configuration)
+  set_fact:
+    expected_response:
+      after: []
+      changed: true
+      commands:
+        - no switchport
+      failed: false
+- name: Check for correct argspec and state
+  dmos_l2_interface:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ result.get('after') == expected_response.get('after') }}"
+
+- name: Test teardown (deleting vlan configuration)
+  set_fact:
+    expected_response:
+      after: []
+      changed: true
+      commands:
+        - no dot1q
+      failed: false
+- name: Check for correct argspec and state
+  dmos_vlan:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ result.get('after') == expected_response.get('after') }}"

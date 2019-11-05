@@ -179,7 +179,7 @@ class L2_interface(ConfigBase):
             qinq = diff.get('qinq')
             if qinq != None:
                 commands.append(
-                    '{0} {1} qinq'.format('' if qinq else 'no', switchport_cmd))
+                    '{0} {1} qinq'.format('' if qinq else 'no', switchport_cmd).strip())
 
             storm_control = diff.get('storm_control')
             if storm_control != None:

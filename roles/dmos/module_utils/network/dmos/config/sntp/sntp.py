@@ -165,7 +165,7 @@ class Sntp(ConfigBase):
         auth = dict_diff.get('auth')
         if auth != None:
             commands.append(
-                '{0} sntp authenticate'.format('' if auth else 'no'))
+                '{0} sntp authenticate'.format('' if auth else 'no').strip())
 
         auth_key = dict_diff.get('auth_key')
         if auth_key != None:
@@ -185,7 +185,7 @@ class Sntp(ConfigBase):
 
         client = dict_diff.get('client')
         if client != None:
-            commands.append('{0} sntp client'.format('' if client else 'no'))
+            commands.append('{0} sntp client'.format('' if client else 'no').strip())
 
         max_poll = dict_diff.get('max_poll')
         if max_poll != None:
@@ -250,11 +250,6 @@ class Sntp(ConfigBase):
                 if auth_key_n_keys == 1:
                     commands.append(auth_key_cmd)
                     continue
-
-                pass_value = each.get('pass')
-                if pass_value != None:
-                    auth_key_cmd += ' md5'
-                commands.append(auth_key_cmd)
 
         client = dict_intsec.get('client')
         if client != None:

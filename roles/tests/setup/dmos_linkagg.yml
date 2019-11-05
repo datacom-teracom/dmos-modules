@@ -1,0 +1,12 @@
+################################# Test Setup ##################################
+
+- name: Deleting linkagg configuration
+  dmos_linkagg:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ not result.get('after') }}"

@@ -1,26 +1,6 @@
 ################################# Test Setup ##################################
 
-- name: Test setup (deleting sntp configuration)
-  set_fact:
-    expected_response:
-      after:
-        - auth: false
-          auth_key: null
-          client: false
-          max_poll: 10
-          min_poll: 6
-          server: null
-          source: null
-- name: Check for correct argspec and state
-  dmos_sntp:
-    config: []
-    state: deleted
-  register: result
-- debug:
-    var: result
-- name: Compare the module result to the expected response
-  assert:
-    that: "{{ result.get('after') == expected_response.get('after') }}"
+- include_tasks: ../setup/dmos_sntp.yml
 
 ################################# Merged State ################################
 
@@ -90,10 +70,15 @@
 - debug:
     var: result
 - name: Compare the module result to the expected response (merged)
-  assert:
-      that: "{{ result.get('after')[0].get('auth_key')[0].pop('pass') != '' and
-                result.get('after')[0].get('auth_key')[1].pop('pass') != '' and
-                result == expected_response }}"
+  block:
+    - assert:
+        that: "{{ result.get('after')[0].get('auth_key')[0].pop('pass') != '' and
+                  result.get('after')[0].get('auth_key')[1].pop('pass') != '' and
+                  result == expected_response }}"
+  rescue:
+    - include_tasks: ../setup/dmos_linkagg.yml
+    - fail:
+        msg: Assertion failed
 
 ################################ Deleted state ################################
 
@@ -163,32 +148,17 @@
 - debug:
     var: result
 - name: Compare the module result to the expected response (deleted)
-  assert:
-      that: "{{ result.get('after')[0].get('auth_key')[0].pop('pass') != '' and
-                result.get('before')[0].get('auth_key')[0].pop('pass') != '' and
-                result.get('before')[0].get('auth_key')[1].pop('pass') != '' and
-                result == expected_response }}"
+  block:
+    - assert:
+        that: "{{ result.get('after')[0].get('auth_key')[0].pop('pass') != '' and
+                  result.get('before')[0].get('auth_key')[0].pop('pass') != '' and
+                  result.get('before')[0].get('auth_key')[1].pop('pass') != '' and
+                  result == expected_response }}"
+  rescue:
+    - include_tasks: ../setup/dmos_linkagg.yml
+    - fail:
+        msg: Assertion failed
 
 ################################ Test Teardown ################################
 
-- name: Test teardown (deleting sntp configuration)
-  set_fact:
-    expected_response:
-      after:
-        - auth: false
-          auth_key: null
-          client: false
-          max_poll: 10
-          min_poll: 6
-          server: null
-          source: null
-- name: Check for correct argspec and state
-  dmos_sntp:
-    config: []
-    state: deleted
-  register: result
-- debug:
-    var: result
-- name: Compare the module result to the expected response
-  assert:
-    that: "{{ result.get('after') == expected_response.get('after') }}"
+- include_tasks: ../setup/dmos_sntp.yml

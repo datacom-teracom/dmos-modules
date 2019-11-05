@@ -1,0 +1,18 @@
+################################# Test Setup ##################################
+
+- name: Deleting log configuration
+  set_fact:
+    expected_response:
+      after:
+        - severity: informational
+          syslog: null
+- name: Check for correct argspec and state
+  dmos_log:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ result.get('after') == expected_response.get('after') }}"

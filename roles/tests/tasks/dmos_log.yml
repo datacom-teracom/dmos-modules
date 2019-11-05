@@ -1,21 +1,6 @@
 ################################# Test Setup ##################################
 
-- name: Test setup (deleting log configuration)
-  set_fact:
-    expected_response:
-      after:
-        - severity: informational
-          syslog: null
-- name: Check for correct argspec and state
-  dmos_log:
-    config: []
-    state: deleted
-  register: result
-- debug:
-    var: result
-- name: Compare the module result to the expected response
-  assert:
-    that: "{{ result.get('after') == expected_response.get('after') }}"
+- include_tasks: ../setup/dmos_log.yml
 
 ################################# Merged State ################################
 
@@ -49,8 +34,13 @@
 - debug:
     var: result
 - name: Compare the module result to the expected response (merged)
-  assert:
-    that: "{{ result == expected_response }}"
+  block:
+    - assert:
+        that: "{{ result == expected_response }}"
+  rescue:
+    - include_tasks: ../setup/dmos_log.yml
+    - fail:
+        msg: Assertion failed
 
 ################################ Deleted state ################################
 
@@ -84,24 +74,14 @@
 - debug:
     var: result
 - name: Compare the module result to the expected response (deleted)
-  assert:
-    that: "{{ result == expected_response }}"
+  block:
+    - assert:
+        that: "{{ result == expected_response }}"
+  rescue:
+    - include_tasks: ../setup/dmos_log.yml
+    - fail:
+        msg: Assertion failed
 
 ################################ Test Teardown ################################
 
-- name: Test Teardown (deleting log configuration)
-  set_fact:
-    expected_response:
-      after:
-        - severity: informational
-          syslog: null
-- name: Check for correct argspec and state
-  dmos_log:
-    config: []
-    state: deleted
-  register: result
-- debug:
-    var: result
-- name: Compare the module result to the expected response
-  assert:
-    that: "{{ result.get('after') == expected_response.get('after') }}"
+- include_tasks: ../setup/dmos_log.yml

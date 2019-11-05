@@ -1,0 +1,23 @@
+################################# Test Setup ##################################
+
+- name: Deleting l3 interface configuration
+  dmos_l3_interface:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ not result.get('after') }}"
+
+- name: Deleting vlan configuration
+  dmos_vlan:
+    config: []
+    state: deleted
+  register: result
+- debug:
+    var: result
+- name: Compare the module result to the expected response
+  assert:
+    that: "{{ not result.get('after') }}"

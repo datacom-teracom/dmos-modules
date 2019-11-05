@@ -1,26 +1,6 @@
 ################################# Test Setup ##################################
 
-- name: Test setup (deleting switchport configuration)
-  dmos_l2_interface:
-    config: []
-    state: deleted
-  register: result
-- debug:
-    var: result
-- name: Compare the module result to the expected response
-  assert:
-    that: "{{ not result.get('after') }}"
-
-- name: Test setup (deleting vlan configuration)
-  dmos_vlan:
-    config: []
-    state: deleted
-  register: result
-- debug:
-    var: result
-- name: Compare the module result to the expected response
-  assert:
-    that: "{{ not result.get('after') }}"
+- include_tasks: ../setup/dmos_l2_interface.yml
 
 - name: Test setup (creating vlans)
   set_fact:
@@ -49,8 +29,13 @@
 - debug:
     var: result
 - name: Compare the module result to the expected response
-  assert:
-    that: "{{ result == expected_response }}"
+  block:
+    - assert:
+        that: "{{ result == expected_response }}"
+  rescue:
+    - include_tasks: ../setup/dmos_l2_interface.yml
+    - fail:
+        msg: Assertion failed
 
 ################################# Merged State ################################
 
@@ -127,8 +112,13 @@
 - debug:
     var: result
 - name: Compare the module result to the expected response (merged)
-  assert:
-    that: "{{ result == expected_response }}"
+  block:
+    - assert:
+        that: "{{ result == expected_response }}"
+  rescue:
+    - include_tasks: ../setup/dmos_l2_interface.yml
+    - fail:
+        msg: Assertion failed
 
 ################################ Deleted state ################################
 
@@ -215,29 +205,14 @@
 - debug:
     var: result
 - name: Compare the module result to the expected response (deleted)
-  assert:
-    that: "{{ result == expected_response }}"
+  block:
+    - assert:
+        that: "{{ result == expected_response }}"
+  rescue:
+    - include_tasks: ../setup/dmos_l2_interface.yml
+    - fail:
+        msg: Assertion failed
 
 ################################ Test Teardown ################################
 
-- name: Test teardown (deleting switchport configuration)
-  dmos_l2_interface:
-    config: []
-    state: deleted
-  register: result
-- debug:
-    var: result
-- name: Compare the module result to the expected response
-  assert:
-    that: "{{ not result.get('after') }}"
-
-- name: Test teardown (deleting vlan configuration)
-  dmos_vlan:
-    config: []
-    state: deleted
-  register: result
-- debug:
-    var: result
-- name: Compare the module result to the expected response
-  assert:
-    that: "{{ not result.get('after') }}"
+- include_tasks: ../setup/dmos_l2_interface.yml

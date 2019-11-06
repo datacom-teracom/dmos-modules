@@ -1,0 +1,17 @@
+################################# Test Setup ##################################
+
+- name: Deleting lldp configuration
+  dmos_lldp:
+    config: []
+    state: deleted
+  register: result
+
+- name: Compare the module result to the expected response
+  block:
+    - assert:
+        that: "{{ not result.get('after') }}"
+  rescue:
+    - debug:
+        var: result
+    - fail:
+        msg: Assertion failed

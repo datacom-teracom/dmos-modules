@@ -181,27 +181,27 @@ class Lldp(ConfigBase):
                 notification = each.get('notification')
                 if notification != None:
                     commands.append('{0} {1} notification'.format(
-                        '' if notification else 'no', intf_cmd))
+                        '' if notification else 'no', intf_cmd).strip())
 
                 tlv_port_description = each.get('tlv_port_description')
                 if tlv_port_description != None:
                     commands.append(
-                        '{0} {1} tlvs-tx port-description'.format('' if tlv_port_description else 'no', intf_cmd))
+                        '{0} {1} tlvs-tx port-description'.format('' if tlv_port_description else 'no', intf_cmd).strip())
 
                 tlv_system_capabilities = each.get('tlv_system_capabilities')
                 if tlv_system_capabilities != None:
                     commands.append(
-                        '{0} {1} tlvs-tx system-capabilities'.format('' if tlv_system_capabilities else 'no', intf_cmd))
+                        '{0} {1} tlvs-tx system-capabilities'.format('' if tlv_system_capabilities else 'no', intf_cmd).strip())
 
                 tlv_system_description = each.get('tlv_system_description')
                 if tlv_system_description != None:
                     commands.append(
-                        '{0} {1} tlvs-tx system-description'.format('' if tlv_system_description else 'no', intf_cmd))
+                        '{0} {1} tlvs-tx system-description'.format('' if tlv_system_description else 'no', intf_cmd).strip())
 
                 tlv_system_name = each.get('tlv_system_name')
                 if tlv_system_name != None:
                     commands.append(
-                        '{0} {1} tlvs-tx system-name'.format('' if tlv_system_name else 'no', intf_cmd))
+                        '{0} {1} tlvs-tx system-name'.format('' if tlv_system_name else 'no', intf_cmd).strip())
 
         msg_fast_tx = dict_diff.get('msg_fast_tx')
         if msg_fast_tx != None:

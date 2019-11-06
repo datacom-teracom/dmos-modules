@@ -1,0 +1,179 @@
+################################# Test Setup ##################################
+
+- include_tasks: ../setup/dmos_lldp.yml
+
+################################# Merged State ################################
+
+- name: Set the expected response as a fact (merged)
+  set_fact:
+    expected_response:
+      before: []
+      after:
+        - interface:
+          - name: gigabit-ethernet-1/1/1
+            admin_status: rx-only
+            notification: true
+            tlv_port_description: false
+            tlv_system_capabilities: true
+            tlv_system_description: false
+            tlv_system_name: true
+
+          - name: gigabit-ethernet-1/1/2
+            admin_status: rx-only
+            notification: true
+            tlv_port_description: false
+            tlv_system_capabilities: true
+            tlv_system_description: false
+            tlv_system_name: true
+          msg_fast_tx: 2020
+          msg_tx_hold_multi: 3
+          msg_tx_interval: 2020
+          notification_interval: 2020
+          reinit_delay: 3
+          tx_credit_max: 33
+          tx_fast_init: 3
+      changed: true
+      commands:
+        - lldp interface gigabit-ethernet-1/1/1 admin-status rx-only
+        - lldp interface gigabit-ethernet-1/1/1 notification
+        - no lldp interface gigabit-ethernet-1/1/1 tlvs-tx port-description
+        - lldp interface gigabit-ethernet-1/1/1 tlvs-tx system-capabilities
+        - no lldp interface gigabit-ethernet-1/1/1 tlvs-tx system-description
+        - lldp interface gigabit-ethernet-1/1/1 tlvs-tx system-name
+        - lldp interface gigabit-ethernet-1/1/2 admin-status rx-only
+        - lldp interface gigabit-ethernet-1/1/2 notification
+        - no lldp interface gigabit-ethernet-1/1/2 tlvs-tx port-description
+        - lldp interface gigabit-ethernet-1/1/2 tlvs-tx system-capabilities
+        - no lldp interface gigabit-ethernet-1/1/2 tlvs-tx system-description
+        - lldp interface gigabit-ethernet-1/1/2 tlvs-tx system-name
+        - lldp message-fast-tx 2020
+        - lldp message-tx-hold-multiplier 3
+        - lldp message-tx-interval 2020
+        - lldp notification-interval 2020
+        - lldp reinit-delay 3
+        - lldp tx-credit-max  33
+        - lldp tx-fast-init 3
+      failed: false
+      response: []
+- name: Check for correct argspec and state (merged)
+  dmos_lldp:
+    config:
+      - interface:
+        - name: gigabit-ethernet-1/1/1
+          admin_status: rx-only
+          notification: true
+          tlv_port_description: false
+          tlv_system_capabilities: true
+          tlv_system_description: false
+          tlv_system_name: true
+
+        - name: gigabit-ethernet-1/1/2
+          admin_status: rx-only
+          notification: true
+          tlv_port_description: false
+          tlv_system_capabilities: true
+          tlv_system_description: false
+          tlv_system_name: true
+        msg_fast_tx: 2020
+        msg_tx_hold_multi: 3
+        msg_tx_interval: 2020
+        notification_interval: 2020
+        reinit_delay: 3
+        tx_credit_max: 33
+        tx_fast_init: 3
+        
+    state: merged
+  register: result
+- name: Compare the module result to the expected response
+  block:
+    - assert:
+        that: "{{ result == expected_response }}"
+  rescue:
+    - debug:
+        var: result
+    - include_tasks: ../setup/dmos_lldp.yml
+    - fail:
+        msg: Assertion failed
+
+############################ Deleted state ################################
+
+- name: Set the expected response as a fact (deleted)
+  set_fact:
+    expected_response:
+      before:
+        - interface:
+          - name: gigabit-ethernet-1/1/1
+            admin_status: rx-only
+            notification: true
+            tlv_port_description: false
+            tlv_system_capabilities: true
+            tlv_system_description: false
+            tlv_system_name: true
+
+          - name: gigabit-ethernet-1/1/2
+            admin_status: rx-only
+            notification: true
+            tlv_port_description: false
+            tlv_system_capabilities: true
+            tlv_system_description: false
+            tlv_system_name: true
+          msg_fast_tx: 2020
+          msg_tx_hold_multi: 3
+          msg_tx_interval: 2020
+          notification_interval: 2020
+          reinit_delay: 3
+          tx_credit_max: 33
+          tx_fast_init: 3
+      after:
+        - interface:
+          - name: gigabit-ethernet-1/1/1
+            admin_status: rx-only
+            notification: true
+            tlv_port_description: false
+            tlv_system_capabilities: false
+            tlv_system_description: false
+            tlv_system_name: false
+
+          msg_fast_tx: 2020
+          msg_tx_hold_multi: 3
+          msg_tx_interval: 2020
+          notification_interval: 2020
+          reinit_delay: 3
+          tx_credit_max: 5
+          tx_fast_init: 4
+      changed: true
+      response: []
+      commands:
+        - no lldp interface gigabit-ethernet-1/1/2
+        - no lldp interface gigabit-ethernet-1/1/1 tlvs-tx system-capabilities
+        - no lldp interface gigabit-ethernet-1/1/1 tlvs-tx system-name
+        - no lldp tx-credit-max
+        - no lldp tx-fast-init
+      failed: false
+- name: Check for correct argspec and state (deleted)
+  dmos_lldp:
+    config:
+      - interface:
+        - name: gigabit-ethernet-1/1/1
+          tlv_system_capabilities: true
+          tlv_system_name: true
+        - name: gigabit-ethernet-1/1/2
+        tx_credit_max: 33
+        tx_fast_init: 3
+    state: deleted
+  register: result
+
+- name: Compare the module result to the expected response (deleted)
+  block:
+    - assert:
+        that: "{{ result == expected_response }}"
+  rescue:
+    - debug:
+        var: result
+    - include_tasks: ../setup/dmos_lldp.yml
+    - fail:
+        msg: Assertion failed
+
+################################# Test Teardown ##################################
+
+- include_tasks: ../setup/dmos_lldp.yml

@@ -30,25 +30,25 @@ class DictDiffer():
         return aux_key if aux_key != None else []
 
     def _transform(self, config, level=0):
-        if isinstance(config, dict):
-            for key, value in iteritems(config):
+        if isinstance(config, list):
+            if len(config) and not isinstance(config[0], dict):
+                return config
+            else:
                 aux = {}
-                if isinstance(value, list):
-                    if len(value) and not isinstance(value[0], dict):
-                        aux = value
-                    else:
-                        for i in range(len(value)):
-                            common_keys = set(
-                                self._config_keys) & set(value[i])
-                            for k in common_keys:
-                                if level in self._config_keys[k]:
-                                    aux['id__{}__{}'.format(
-                                        k, value[i][k])] = value[i]
-                    value = aux
-                    config[key] = value
-                if isinstance(value, dict):
-                    for sub_key in value:
-                        self._transform(value[sub_key], level=level+1)
+                for i in range(len(config)):
+                    common_keys = set(
+                        self._config_keys) & set(config[i])
+                    for k in common_keys:
+                        if level in self._config_keys[k]:
+                            aux['id__{}__{}'.format(
+                                k, config[i][k])] = config[i]
+                config = aux
+        if isinstance(config, dict):
+            aux = config
+            new_level = level+1
+            for sub_key in config:
+                aux[sub_key] = self._transform(config[sub_key], new_level)
+        return config
 
     def _dict_diff(self, base, comparable):
         if not isinstance(base, dict):
@@ -146,7 +146,7 @@ class DictDiffer():
                 if child_val:
                     dct = {key: child_val}
             elif (isinstance(val, list) and val
-                and all([isinstance(x, dict) for x in val])):
+                  and all([isinstance(x, dict) for x in val])):
                 child_val = [self._remove_null(x) for x in val]
                 if child_val:
                     dct = {key: child_val}
@@ -161,9 +161,9 @@ class DictDiffer():
             return {}
         if not self._base:
             return self._comparable
-        self._transform(self._base)
+        self._base = self._transform(self._base)
         self._comparable = self._remove_null(self._comparable)
-        self._transform(self._comparable)
+        self._comparable = self._transform(self._comparable)
         diff = self._dict_diff(self._base, self._comparable)
         self._untransform(diff)
         if self._is_list:
@@ -173,9 +173,9 @@ class DictDiffer():
     def deepintersect(self):
         if not self._comparable and not self._base:
             return [] if self._is_list else {}
-        self._transform(self._base)
+        self._base = self._transform(self._base)
         self._comparable = self._remove_null(self._comparable)
-        self._transform(self._comparable)
+        self._comparable = self._transform(self._comparable)
         intsec = self._dict_intersect(self._base, self._comparable)
         self._untransform(intsec)
         if self._is_list:

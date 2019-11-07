@@ -159,7 +159,7 @@ class Linkagg(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        differ = DictDiffer(have, want, {'lag_id': [0], 'name': [1]})
+        differ = DictDiffer(have, want, {'lag_id': [1], 'name': [3]})
         dict_diff = differ.deepdiff()
 
         sys_prio = dict_diff.get('sys_prio')
@@ -243,7 +243,7 @@ class Linkagg(ConfigBase):
         if not want and have:
             return ['no link-aggregation']
 
-        differ = DictDiffer(have, want, {'lag_id': [0], 'name': [1]})
+        differ = DictDiffer(have, want, {'lag_id': [1], 'name': [3]})
         dict_intsec = differ.deepintersect()
 
         sys_prio = dict_intsec.get('sys_prio')

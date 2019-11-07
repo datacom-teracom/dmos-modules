@@ -1,4 +1,9 @@
 - include: "{{ item }}"
   loop:
+  - dmos_l2_interface.yml
+  - dmos_l3_interface.yml
+  - dmos_linkagg.yml
+  - dmos_lldp.yml
   - dmos_log.yml
+  - dmos_sntp.yml
   - dmos_vlan.yml

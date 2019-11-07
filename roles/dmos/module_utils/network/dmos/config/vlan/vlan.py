@@ -159,7 +159,7 @@ class Vlan(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        differ = DictDiffer(have, want, {'vlan_id': [0], 'name': [1]})
+        differ = DictDiffer(have, want, {'vlan_id': [1], 'name': [3]})
 
         dict_diff = differ.deepdiff()
         for diff in dict_diff:
@@ -195,7 +195,7 @@ class Vlan(ConfigBase):
         if not want and have:
             return ['no dot1q']
 
-        differ = DictDiffer(have, want, {'vlan_id': [0], 'name': [1]})
+        differ = DictDiffer(have, want, {'vlan_id': [1], 'name': [3]})
         dict_intsec = differ.deepintersect()
 
         for diff in dict_intsec:

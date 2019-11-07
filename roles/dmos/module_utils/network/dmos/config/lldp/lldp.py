@@ -159,7 +159,7 @@ class Lldp(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        differ = DictDiffer(have, want, {'name': [0]})
+        differ = DictDiffer(have, want, {'name': [1]})
         dict_diff = differ.deepdiff()
 
         interface = dict_diff.get('interface')
@@ -242,7 +242,7 @@ class Lldp(ConfigBase):
         if not want and have:
             return ['no lldp']
 
-        differ = DictDiffer(have, want, {'name': [0]})
+        differ = DictDiffer(have, want, {'name': [1]})
         dict_intsec = differ.deepintersect()
 
         interface = dict_intsec.get('interface')

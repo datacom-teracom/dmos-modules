@@ -160,7 +160,7 @@ class L2_interface(ConfigBase):
         # Set the interface config based on the want and have config
         commands = []
 
-        differ = DictDiffer(have, want, {'interface_name': [0], 'traffic': [1]})
+        differ = DictDiffer(have, want, {'interface_name': [1], 'traffic': [3]})
 
         dict_diff = differ.deepdiff()
         for diff in dict_diff:
@@ -206,7 +206,7 @@ class L2_interface(ConfigBase):
         if not want and have:
             return ['no switchport']
 
-        differ = DictDiffer(have, want, {'interface_name': [0], 'traffic': [1]})
+        differ = DictDiffer(have, want, {'interface_name': [1], 'traffic': [3]})
         dict_intsec = differ.deepintersect()
 
         for diff in dict_intsec:

@@ -1,0 +1,220 @@
+---
+GENERATOR_VERSION: '1.0'
+ANSIBLE_METADATA: |
+    {
+        'metadata_version': '1.1',
+        'status': ['preview'],
+        'supported_by': '<support_group>'
+    }
+
+NETWORK_OS: dmos
+RESOURCE: twamp
+COPYRIGHT: Copyright 2019 Red Hat
+LICENSE: gpl-3.0.txt
+
+DOCUMENTATION: |
+  module: dmos_twamp
+  version_added: 4.9
+  short_description: 'Manages <xxxx> attributes of <network_os> <resource>.'
+  description: 'Manages <xxxx> attributes of <network_os> <resource>'
+  author: Ansible Network Engineer
+  notes:
+    - 'Tested against <network_os> <version>'
+  options:
+    config:
+      description: The provided configuration
+      type: list
+      elements: dict
+      suboptions:
+        reflector:
+          description: TWAMP reflector configuration
+          type: dict
+          suboptions:
+            admin_status:
+              description: The administrative status of the TWAMP reflector
+              type: str
+              choices:
+                - up
+                - down
+            ipv4:
+              description: IPv4 configuration
+              type: dict
+              suboptions:
+                client_address:
+                  description: White list client address
+                  type: list
+                  elements: dict
+                  suboptions:
+                    address:
+                      description: Client address
+                      type: str
+                      required: true
+                    state:
+                      description: Connection status
+                      type: str
+                      choices:
+                        - enable
+                        - disable
+                client_network:
+                  description: White list client network
+                  type: list
+                  elements: dict
+                  suboptions:
+                    network:
+                      description: Client network
+                      type: str
+                      required: true
+                    state:
+                      description: Connection status
+                      type: str
+                      choices:
+                        - enable
+                        - disable
+            ipv6:
+              description: IPv6 configuration
+              type: dict
+              suboptions:
+                client_address:
+                  description: White list client address
+                  type: list
+                  elements: dict
+                  suboptions:
+                    address:
+                      description: Client address
+                      type: str
+                      required: true
+                    state:
+                      description: Connection status
+                      type: str
+                      choices:
+                        - enable
+                        - disable
+                client_network:
+                  description: White list client network
+                  type: list
+                  elements: dict
+                  suboptions:
+                    network:
+                      description: Client network
+                      type: str
+                      required: true
+                    state:
+                      description: Connection status
+                      type: str
+                      choices:
+                        - enable
+                        - disable
+                    eui_64:
+                      description: Extended Unique Identifier configuration
+                      type: bool
+            port:
+              description: <1024-65535> TWAMP Server Port
+              type: int
+        sender:
+          description: TWAMP sender configuration
+          type: dict
+          suboptions:
+            admin_status:
+              description: The administrative status of the TWAMP sender
+              type: str
+              choices:
+                - up
+                - down
+            connection:
+              description: TWAMP sender connection configuration
+              type: list
+              elements: dict
+              suboptions:
+                id:
+                  description: TWAMP sender connection ID
+                  type: int
+                  required: true
+                admin_status:
+                  description: The administrative status of the TWAMP sender connection
+                  type: str
+                  choices:
+                    - up
+                    - down
+                ipv4:
+                  description: Ipv4 family configuration
+                  type: dict
+                  suboptions:
+                    source_address:
+                      description: TWAMP connection source ip address
+                      type: str
+                    target_address:
+                      description: TWAMP connection target ip address
+                      type: str
+                ipv6:
+                  description: Ipv6 family configuration
+                  type: dict
+                  suboptions:
+                    source_address:
+                      description: TWAMP connection source ip address
+                      type: str
+                    target_address:
+                      description: TWAMP connection target ip address
+                      type: str
+                number_of_packets:
+                  description: <1-65535> Number of packets sent on every test
+                  type: int
+                server_port:
+                  description: <1024-65535> Server port number for TCP connection
+                  type: int
+                test_interval:
+                  description: <0-65535> Test interval in seconds
+                  type: int
+                test_session:
+                  description: TWAMP sender test-session configuration
+                  type: list
+                  elements: dict
+                  suboptions:
+                    id:
+                      description: TWAMP sender test-session ID
+                      type: int
+                      required: true
+                    dscp:
+                      description: '<0 | 8 | 10 | 12 | 14 | 16 | 18 | 20 | 22 | 24 |
+                      26 | 28 | 30 | 32 | 34 | 36 | 38 | 40 | 46 | 48 | 56> DSCP value'
+                      type: int
+                    ipv4:
+                      description: Ipv4 family configuration
+                      type: dict
+                      suboptions:
+                        source_address:
+                          description: TWAMP test-session source ip address
+                          type: str
+                        target_address:
+                          description: TWAMP test-session target ip address
+                          type: str
+                    ipv6:
+                      description: Ipv6 family configuration
+                      type: dict
+                      suboptions:
+                        source_address:
+                          description: TWAMP test-session source ip address
+                          type: str
+                        target_address:
+                          description: TWAMP test-session target ip address
+                          type: str
+                    max_port:
+                      description: <1024-65535> Server maximum port number
+                      type: int
+                    min_port:
+                      description: <1024-65535> Server minimum port number
+                      type: int
+                    packet_size:
+                      description: <64-65535> Packet size value
+                      type: int
+    state:
+      description:
+      - The state the configuration should be left in
+      type: str
+      choices:
+      - merged
+      - replaced
+      - overridden
+      - deleted
+      default: merged
+EXAMPLES:
+  - dmos_twamp_example.txt

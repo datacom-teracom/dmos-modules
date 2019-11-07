@@ -76,7 +76,7 @@
                   result.get('after')[0].get('auth_key')[1].pop('pass') != '' and
                   result == expected_response }}"
   rescue:
-    - include_tasks: ../setup/dmos_linkagg.yml
+    - include_tasks: ../setup/dmos_sntp.yml
     - fail:
         msg: Assertion failed
 
@@ -155,7 +155,7 @@
                   result.get('before')[0].get('auth_key')[1].pop('pass') != '' and
                   result == expected_response }}"
   rescue:
-    - include_tasks: ../setup/dmos_linkagg.yml
+    - include_tasks: ../setup/dmos_sntp.yml
     - fail:
         msg: Assertion failed
 

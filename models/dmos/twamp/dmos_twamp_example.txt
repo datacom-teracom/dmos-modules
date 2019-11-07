@@ -1,0 +1,63 @@
+# Using Present
+
+<placeholder for the configuration example prior to module invocation>
+
+- name: Configure twamp
+  dmos_twamp:
+    config:
+      - reflector:
+          port: 862
+          admin_status: up
+          ipv4:
+            client_address:
+              - address: 10.0.0.1
+                state: disable
+              - address: 10.0.0.2
+                state: enable
+            client_network:
+              - network: 20.0.0.0/24
+                state: enable
+              - network: 10.0.0.0/24
+                state: disable
+          ipv6:
+            client_address:
+              - address: 2018::1
+                state: enable
+              - address: 2018::2
+                state: disable
+            client_network:
+              - network: 2019::/64
+                state: enable
+              - network: 2017::/64
+                state: disable
+        sender:
+          admin_status: down
+          connection:
+            - id: 2
+              admin_status: down
+              ipv6:
+                source_address: 2018::1
+                target_address: 2018::2
+              number_of_packets: 50
+              server_port: 862
+              test_interval: 6
+              test_session:
+                - id: 2
+                  ipv4:
+                    source_address: 10.0.0.1
+                    target_address: 10.0.0.2
+                  max_port: 65535
+                  min_port: 1024
+                  dscp: 0
+                  packet_size: 64
+                - id: 3
+                  ipv6:
+                    source_address: 2018::1
+                    target_address: 2018::2
+            - id: 3
+              admin_status: up
+              ipv4:
+                source_address: 10.0.0.1
+                target_address: 10.0.0.2
+
+<placeholder for the configuration example after module invocation>

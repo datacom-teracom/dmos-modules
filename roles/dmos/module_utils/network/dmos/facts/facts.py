@@ -19,6 +19,7 @@ from ansible.module_utils.network.dmos.facts.l2_interface.l2_interface import L2
 from ansible.module_utils.network.dmos.facts.lldp.lldp import LldpFacts
 from ansible.module_utils.network.dmos.facts.l3_interface.l3_interface import L3_interfaceFacts
 from ansible.module_utils.network.dmos.facts.user.user import UserFacts
+from ansible.module_utils.network.dmos.facts.twamp.twamp import TwampFacts
 
 
 FACT_LEGACY_SUBSETS = {}
@@ -31,6 +32,7 @@ FACT_RESOURCE_SUBSETS = dict(
     lldp=LldpFacts,
     l3_interface=L3_interfaceFacts,
     user=UserFacts,
+    twamp=TwampFacts,
 )
 
 

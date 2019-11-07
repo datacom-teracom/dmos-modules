@@ -183,6 +183,24 @@ EXAMPLES = """
 - dmos_facts:
     gather_subset: min
     gather_network_resources: l3_interface
+
+# Collect only the twamp facts
+- dmos_facts:
+    gather_subset:
+      - !all
+      - !min
+    gather_network_resources:
+      - twamp
+
+# Do not collect twamp facts
+- dmos_facts:
+    gather_network_resources:
+      - "!twamp"
+
+# Collect twamp and minimal default facts
+- dmos_facts:
+    gather_subset: min
+    gather_network_resources: twamp
 """
 
 RETURN = """

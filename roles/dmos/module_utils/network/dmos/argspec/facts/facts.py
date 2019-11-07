@@ -25,6 +25,7 @@ class FactsArgs(object):  # pylint: disable=R0903
         'lldp',
         'l3_interface',
         'user',
+        'twamp',
     ]
 
     argument_spec = {

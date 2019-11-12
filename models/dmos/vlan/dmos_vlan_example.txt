@@ -15,27 +15,27 @@ dmos_vlan:
     - vlan_id: 2021
   state: merged
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
-# - dot1q vlan 2021
 # - dot1q vlan 2019 interface gigabit-ethernet-1/1/1 tagged
 # - dot1q vlan 2020 name dmos_vlan
 # - dot1q vlan 2020 interface gigabit-ethernet-1/1/2 untagged
+# - dot1q vlan 2021
 
 ### Using Deleted ###
 
 dmos_vlan:
   config:
-    - vlan_id: 2020
-      name: dmos_vlan
     - vlan_id: 2019
       interface:
         - name: gigabit-ethernet-1/1/1
+    - vlan_id: 2020
+      name: dmos_vlan
     - vlan_id: 2021
   state: deleted
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
-# - no dot1q vlan 2021
 # - no dot1q vlan 2019 interface gigabit-ethernet-1/1/1
 # - no dot1q vlan 2020 name
+# - no dot1q vlan 2021

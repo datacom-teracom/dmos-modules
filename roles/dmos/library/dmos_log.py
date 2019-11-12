@@ -88,7 +88,7 @@ dmos_log:
       severity: alert
   state: merged
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - log severity alert
 # - log syslog 192.168.1.1
@@ -104,13 +104,11 @@ dmos_log:
       severity: informational
   state: deleted
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - no log severity
-# - no log syslog 192.168.2.1
 # - no log syslog 192.168.1.1
-
-
+# - no log syslog 192.168.2.1
 """
 RETURN = """
 before:

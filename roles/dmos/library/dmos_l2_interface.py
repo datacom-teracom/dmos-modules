@@ -100,17 +100,6 @@ EXAMPLES = """
 
 dmos_l2_interface:
   config:
-    - interface_name: gigabit-ethernet-1/1/6
-      native_vlan_id: 10
-      qinq: true
-      storm_control:
-        - traffic: broadcast
-          percent: 10.1
-        - traffic: multicast
-          percent: 59.5
-        - traffic: unicast
-          percent: 0.1
-      tpid: '0x88a8'
     - interface_name: gigabit-ethernet-1/1/1
       native_vlan_id: 12
       qinq: false
@@ -122,9 +111,20 @@ dmos_l2_interface:
         - traffic: unicast
           percent: 1.0
       tpid: '0x9100'
+    - interface_name: gigabit-ethernet-1/1/6
+      native_vlan_id: 10
+      qinq: true
+      storm_control:
+        - traffic: broadcast
+          percent: 10.1
+        - traffic: multicast
+          percent: 59.5
+        - traffic: unicast
+          percent: 0.1
+      tpid: '0x88a8'
   state: merged
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - switchport interface gigabit-ethernet-1/1/1 native-vlan vlan-id 12
 # - no switchport interface gigabit-ethernet-1/1/1 qinq
@@ -143,17 +143,6 @@ dmos_l2_interface:
 
 dmos_l2_interface:
   config:
-    - interface_name: gigabit-ethernet-1/1/6
-      native_vlan_id: 10
-      qinq: true
-      storm_control:
-        - traffic: broadcast
-          percent: 10.1
-        - traffic: multicast
-          percent: 59.5
-        - traffic: unicast
-          percent: 0.1
-      tpid: '0x88a8'
     - interface_name: gigabit-ethernet-1/1/1
       native_vlan_id: 12
       qinq: false
@@ -165,9 +154,10 @@ dmos_l2_interface:
         - traffic: unicast
           percent: 1.0
       tpid: '0x9100'
+    - interface_name: gigabit-ethernet-1/1/6
   state: deleted
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - no switchport interface gigabit-ethernet-1/1/1 native-vlan
 # - no switchport interface gigabit-ethernet-1/1/1 qinq
@@ -175,14 +165,7 @@ dmos_l2_interface:
 # - no switchport interface gigabit-ethernet-1/1/1 storm-control multicast
 # - no switchport interface gigabit-ethernet-1/1/1 storm-control unicast
 # - no switchport interface gigabit-ethernet-1/1/1 tpid
-# - no switchport interface gigabit-ethernet-1/1/6 native-vlan
-# - no switchport interface gigabit-ethernet-1/1/6 qinq
-# - no switchport interface gigabit-ethernet-1/1/6 storm-control broadcast
-# - no switchport interface gigabit-ethernet-1/1/6 storm-control multicast
-# - no switchport interface gigabit-ethernet-1/1/6 storm-control unicast
-# - no switchport interface gigabit-ethernet-1/1/6 tpid
-
-
+# - no switchport interface gigabit-ethernet-1/1/6
 """
 RETURN = """
 before:

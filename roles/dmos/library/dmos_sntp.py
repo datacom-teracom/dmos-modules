@@ -112,7 +112,7 @@ EXAMPLES = """
 
 dmos_sntp:
   config:
-    - auth: true
+    - auth: false
       auth_key:
         - id: 10
           pass: test
@@ -131,9 +131,9 @@ dmos_sntp:
         ipv6: 1918::2019
   state: merged
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
-# - sntp authenticate
+# - no sntp authenticate
 # - sntp authentication-key 10 md5 test
 # - sntp authentication-key 12 md5 password
 # - sntp client
@@ -165,7 +165,7 @@ dmos_sntp:
         ipv6: 1918::2019
   state: deleted
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - no sntp authenticate
 # - no sntp authentication-key 10
@@ -176,8 +176,6 @@ dmos_sntp:
 # - no sntp server 20.0.0.2
 # - no sntp source ipv4
 # - no sntp source ipv6
-
-
 """
 RETURN = """
 before:

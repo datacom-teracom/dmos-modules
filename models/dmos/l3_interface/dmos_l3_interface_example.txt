@@ -62,7 +62,7 @@ dmos_l3_interface:
           suppress: true
   state: merged
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - interface l3 interface description "Hello World"
 # - interface l3 interface ip-mtu 1280
@@ -135,43 +135,11 @@ dmos_l3_interface:
               no_autoconfig: false
               off_link: false
             - ip: 2018::/64
-              no_advertise: false
-              no_autoconfig: true
-              off_link: false
           suppress: false
     - name: test
-      description: Hey jude
-      ip_mtu: 1280
-      lower_layer_if: 12
-      vlan_link_detect: true
-      vrf: null
-      ipv4:
-        address: 192.168.3.1/24
-        secondary:
-          - 192.168.4.1/24
-      ipv6:
-        address:
-          - 1918::1/64
-          - 1919::2/64
-        enable: true
-        nd_ra:
-          lifetime: 800
-          max_interval: 700
-          min_interval: 298
-          mtu_suppress: false
-          prefix:
-            - ip: 1917::/64
-              no_advertise: true
-              no_autoconfig: false
-              off_link: false
-            - ip: 1918::/64
-              no_advertise: false
-              no_autoconfig: true
-              off_link: false
-          suppress: true
   state: deleted
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - no interface l3 interface description
 # - no interface l3 interface ip-mtu
@@ -186,28 +154,8 @@ dmos_l3_interface:
 # - no interface l3 interface ipv6 nd ra prefix 2017::/64 no-advertise
 # - no interface l3 interface ipv6 nd ra prefix 2017::/64 no-autoconfig
 # - no interface l3 interface ipv6 nd ra prefix 2017::/64 off-link
-# - no interface l3 interface ipv6 nd ra prefix 2018::/64 no-advertise
-# - no interface l3 interface ipv6 nd ra prefix 2018::/64 no-autoconfig
-# - no interface l3 interface ipv6 nd ra prefix 2018::/64 off-link
+# - no interface l3 interface ipv6 nd ra prefix 2018::/64
 # - no interface l3 interface ipv6 nd ra suppress
 # - no interface l3 interface ipv6 nd ra mtu suppress
 # - no interface l3 interface ipv6 enable
-# - no interface l3 test description
-# - no interface l3 test ip-mtu
-# - no interface l3 test lower-layer-if vlan
-# - no interface l3 test ipv4 address 192.168.3.1/24
-# - no interface l3 test ipv4 address secondary 192.168.4.1/24
-# - no interface l3 test ipv6 address 1919::2/64
-# - no interface l3 test ipv6 address 1918::1/64
-# - no interface l3 test ipv6 nd ra lifetime
-# - no interface l3 test ipv6 nd ra max-interval
-# - no interface l3 test ipv6 nd ra min-interval
-# - no interface l3 test ipv6 nd ra prefix 1917::/64 no-advertise
-# - no interface l3 test ipv6 nd ra prefix 1917::/64 no-autoconfig
-# - no interface l3 test ipv6 nd ra prefix 1917::/64 off-link
-# - no interface l3 test ipv6 nd ra prefix 1918::/64 no-advertise
-# - no interface l3 test ipv6 nd ra prefix 1918::/64 no-autoconfig
-# - no interface l3 test ipv6 nd ra prefix 1918::/64 off-link
-# - no interface l3 test ipv6 nd ra suppress
-# - no interface l3 test ipv6 nd ra mtu suppress
-# - no interface l3 test ipv6 enable
+# - no interface l3 test

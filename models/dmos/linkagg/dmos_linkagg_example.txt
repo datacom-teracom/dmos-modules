@@ -31,7 +31,7 @@ dmos_linkagg:
       sys_prio: 400
   state: merged
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - link-aggregation system-priority 400
 # - link-aggregation interface lag 1 administrative-status up
@@ -66,44 +66,24 @@ dmos_linkagg:
           - name: gigabit-ethernet-1/1/1
             port_prio: 12
           - name: gigabit-ethernet-1/1/3
-            port_prio: 15
         max_active: 4
         min_active: 3
         mode: active
         period: long
       - lag_id: 2
-        admin_status: down
-        description: Hey Jude
-        load_balance: enhanced
-        interface:
-          - name: gigabit-ethernet-1/1/2
-            port_prio: 113
-          - name: gigabit-ethernet-1/1/5
-        max_active: 2
-        min_active: 1
-        mode: passive
-        period: short
       sys_prio: 400
   state: deleted
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - no link-aggregation system-priority
 # - no link-aggregation interface lag 1 administrative-status
 # - no link-aggregation interface lag 1 description
-# - no link-aggregation interface lag 1 interface gigabit-ethernet-1/1/3 port-priority
 # - no link-aggregation interface lag 1 interface gigabit-ethernet-1/1/1 port-priority
+# - no link-aggregation interface lag 1 interface gigabit-ethernet-1/1/3
 # - no link-aggregation interface lag 1 load-balance
 # - no link-aggregation interface lag 1 maximum-active
 # - no link-aggregation interface lag 1 minimum-active
 # - no link-aggregation interface lag 1 mode
 # - no link-aggregation interface lag 1 period
-# - no link-aggregation interface lag 2 administrative-status
-# - no link-aggregation interface lag 2 description
-# - no link-aggregation interface lag 2 interface gigabit-ethernet-1/1/5
-# - no link-aggregation interface lag 2 interface gigabit-ethernet-1/1/2 port-priority
-# - no link-aggregation interface lag 2 load-balance
-# - no link-aggregation interface lag 2 maximum-active
-# - no link-aggregation interface lag 2 minimum-active
-# - no link-aggregation interface lag 2 mode
-# - no link-aggregation interface lag 2 period
+# - no link-aggregation interface lag 2

@@ -299,7 +299,7 @@ dmos_twamp:
               target_address: 10.0.0.2
   state: merged
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - oam twamp reflector administrative-status up
 # - oam twamp reflector ipv4 client-address 10.0.0.1 disable
@@ -375,7 +375,7 @@ dmos_twamp:
           - id: 3
   state: deleted
 
-# This configuration will result on the following commands:
+# This configuration will result in the following commands:
 
 # - no oam twamp reflector administrative-status
 # - no oam twamp reflector ipv4 client-address 10.0.0.1 disable
@@ -399,8 +399,6 @@ dmos_twamp:
 # - no oam twamp sender connection 2 test-session 2 max-port
 # - no oam twamp sender connection 2 test-session 2 min-port
 # - no oam twamp sender connection 2 test-session 2 packet-size
-
-
 """
 RETURN = """
 before:

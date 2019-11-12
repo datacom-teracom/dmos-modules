@@ -140,39 +140,219 @@ options:
     default: merged
 """
 EXAMPLES = """
-# Using Present
+### Using Merged ###
 
-<placeholder for the configuration example prior to module invocation>
+dmos_l3_interface:
+  config:
+    - name: interface
+      description: Hello World
+      ip_mtu: 1280
+      lower_layer_if: 10
+      vlan_link_detect: true
+      ipv4:
+        address: 192.168.2.1/24
+        secondary:
+          - 192.168.1.1/24
+      ipv6:
+        address:
+          - 2018::1/64
+          - 2019::2/64
+        enable: true
+        nd_ra:
+          lifetime: 700
+          max_interval: 600
+          min_interval: 198
+          mtu_suppress: true
+          prefix:
+            - ip: 2018::/64
+              no_advertise: false
+              no_autoconfig: true
+              off_link: false
+            - ip: 2017::/64
+              no_advertise: true
+              no_autoconfig: false
+              off_link: false
+          suppress: false
+    - name: test
+      description: Hey jude
+      ip_mtu: 1280
+      lower_layer_if: 12
+      vlan_link_detect: true
+      ipv4:
+        address: 192.168.3.1/24
+        secondary:
+          - 192.168.4.1/24
+      ipv6:
+        address:
+          - 1918::1/64
+          - 1919::2/64
+        enable: true
+        nd_ra:
+          lifetime: 800
+          max_interval: 700
+          min_interval: 298
+          mtu_suppress: false
+          prefix:
+            - ip: 1918::/64
+              no_advertise: false
+              no_autoconfig: true
+              off_link: false
+            - ip: 1917::/64
+              no_advertise: true
+              no_autoconfig: false
+              off_link: false
+          suppress: true
+  state: merged
 
-- name: Configure L3 Interface
-  dmos_l3_interface:
-    config:
-      - name: test
-        description: Hello World
-        ip_mtu: 1280
-        lower_layer_if: 1
-        vlan_link_detect: true
-        ipv4:
-          address: 192.168.2.1/24
-          secondary:
-            - 192.168.1.1/24
-        ipv6:
-          address:
-            - 2018::01/64
-            - 2019::02/64
-          enable: true
-          nd_ra:
-            lifetime: 700
-            max_interval: 600
-            min_interval: 198
-            mtu_suppress: true
-            prefix:
-              - ip: 2018::/64
-                no_advertise: false
-                no_autoconfig: true
-                off_link: false
+# This configuration will result on the following commands:
 
-<placeholder for the configuration example after module invocation>
+# - interface l3 interface description "Hello World"
+# - interface l3 interface ip-mtu 1280
+# - interface l3 interface lower-layer-if vlan 10
+# - interface l3 interface vlan-link-detect enabled
+# - interface l3 interface ipv4 address 192.168.2.1/24
+# - interface l3 interface ipv4 address secondary 192.168.1.1/24
+# - interface l3 interface ipv6 enable
+# - interface l3 interface ipv6 address 2018::1/64
+# - interface l3 interface ipv6 address 2019::2/64
+# - interface l3 interface ipv6 nd ra lifetime 700
+# - interface l3 interface ipv6 nd ra max-interval 600
+# - interface l3 interface ipv6 nd ra min-interval 198
+# - interface l3 interface ipv6 nd ra prefix 2017::/64 no-advertise
+# - no interface l3 interface ipv6 nd ra prefix 2017::/64 no-autoconfig
+# - no interface l3 interface ipv6 nd ra prefix 2017::/64 off-link
+# - no interface l3 interface ipv6 nd ra prefix 2018::/64 no-advertise
+# - interface l3 interface ipv6 nd ra prefix 2018::/64 no-autoconfig
+# - no interface l3 interface ipv6 nd ra prefix 2018::/64 off-link
+# - no interface l3 interface ipv6 nd ra suppress
+# - interface l3 interface ipv6 nd ra mtu suppress
+# - interface l3 test description "Hey jude"
+# - interface l3 test ip-mtu 1280
+# - interface l3 test lower-layer-if vlan 12
+# - interface l3 test vlan-link-detect enabled
+# - interface l3 test ipv4 address 192.168.3.1/24
+# - interface l3 test ipv4 address secondary 192.168.4.1/24
+# - interface l3 test ipv6 enable
+# - interface l3 test ipv6 address 1918::1/64
+# - interface l3 test ipv6 address 1919::2/64
+# - interface l3 test ipv6 nd ra lifetime 800
+# - interface l3 test ipv6 nd ra max-interval 700
+# - interface l3 test ipv6 nd ra min-interval 298
+# - interface l3 test ipv6 nd ra prefix 1917::/64 no-advertise
+# - no interface l3 test ipv6 nd ra prefix 1917::/64 no-autoconfig
+# - no interface l3 test ipv6 nd ra prefix 1917::/64 off-link
+# - no interface l3 test ipv6 nd ra prefix 1918::/64 no-advertise
+# - interface l3 test ipv6 nd ra prefix 1918::/64 no-autoconfig
+# - no interface l3 test ipv6 nd ra prefix 1918::/64 off-link
+# - interface l3 test ipv6 nd ra suppress
+# - no interface l3 test ipv6 nd ra mtu suppress
+
+### Using Delete ###
+
+dmos_l3_interface:
+  config:
+    - name: interface
+      description: Hello World
+      ip_mtu: 1280
+      lower_layer_if: 10
+      vlan_link_detect: true
+      vrf: null
+      ipv4:
+        address: 192.168.2.1/24
+        secondary:
+          - 192.168.1.1/24
+      ipv6:
+        address:
+          - 2018::1/64
+          - 2019::2/64
+        enable: true
+        nd_ra:
+          lifetime: 700
+          max_interval: 600
+          min_interval: 198
+          mtu_suppress: true
+          prefix:
+            - ip: 2017::/64
+              no_advertise: true
+              no_autoconfig: false
+              off_link: false
+            - ip: 2018::/64
+              no_advertise: false
+              no_autoconfig: true
+              off_link: false
+          suppress: false
+    - name: test
+      description: Hey jude
+      ip_mtu: 1280
+      lower_layer_if: 12
+      vlan_link_detect: true
+      vrf: null
+      ipv4:
+        address: 192.168.3.1/24
+        secondary:
+          - 192.168.4.1/24
+      ipv6:
+        address:
+          - 1918::1/64
+          - 1919::2/64
+        enable: true
+        nd_ra:
+          lifetime: 800
+          max_interval: 700
+          min_interval: 298
+          mtu_suppress: false
+          prefix:
+            - ip: 1917::/64
+              no_advertise: true
+              no_autoconfig: false
+              off_link: false
+            - ip: 1918::/64
+              no_advertise: false
+              no_autoconfig: true
+              off_link: false
+          suppress: true
+  state: deleted
+
+# This configuration will result on the following commands:
+
+# - no interface l3 interface description
+# - no interface l3 interface ip-mtu
+# - no interface l3 interface lower-layer-if vlan
+# - no interface l3 interface ipv4 address 192.168.2.1/24
+# - no interface l3 interface ipv4 address secondary 192.168.1.1/24
+# - no interface l3 interface ipv6 address 2018::1/64
+# - no interface l3 interface ipv6 address 2019::2/64
+# - no interface l3 interface ipv6 nd ra lifetime
+# - no interface l3 interface ipv6 nd ra max-interval
+# - no interface l3 interface ipv6 nd ra min-interval
+# - no interface l3 interface ipv6 nd ra prefix 2017::/64 no-advertise
+# - no interface l3 interface ipv6 nd ra prefix 2017::/64 no-autoconfig
+# - no interface l3 interface ipv6 nd ra prefix 2017::/64 off-link
+# - no interface l3 interface ipv6 nd ra prefix 2018::/64 no-advertise
+# - no interface l3 interface ipv6 nd ra prefix 2018::/64 no-autoconfig
+# - no interface l3 interface ipv6 nd ra prefix 2018::/64 off-link
+# - no interface l3 interface ipv6 nd ra suppress
+# - no interface l3 interface ipv6 nd ra mtu suppress
+# - no interface l3 interface ipv6 enable
+# - no interface l3 test description
+# - no interface l3 test ip-mtu
+# - no interface l3 test lower-layer-if vlan
+# - no interface l3 test ipv4 address 192.168.3.1/24
+# - no interface l3 test ipv4 address secondary 192.168.4.1/24
+# - no interface l3 test ipv6 address 1919::2/64
+# - no interface l3 test ipv6 address 1918::1/64
+# - no interface l3 test ipv6 nd ra lifetime
+# - no interface l3 test ipv6 nd ra max-interval
+# - no interface l3 test ipv6 nd ra min-interval
+# - no interface l3 test ipv6 nd ra prefix 1917::/64 no-advertise
+# - no interface l3 test ipv6 nd ra prefix 1917::/64 no-autoconfig
+# - no interface l3 test ipv6 nd ra prefix 1917::/64 off-link
+# - no interface l3 test ipv6 nd ra prefix 1918::/64 no-advertise
+# - no interface l3 test ipv6 nd ra prefix 1918::/64 no-autoconfig
+# - no interface l3 test ipv6 nd ra prefix 1918::/64 off-link
+# - no interface l3 test ipv6 nd ra suppress
+# - no interface l3 test ipv6 nd ra mtu suppress
+# - no interface l3 test ipv6 enable
 
 
 """
@@ -194,6 +374,16 @@ commands:
   returned: always
   type: list
   sample: ['command 1', 'command 2', 'command 3']
+changed:
+  description: If configuration resulted in any change
+  returned: always
+  type: bool
+  sample: True or False
+response:
+  description: The response of executed commands
+  returned: always
+  type: list
+  sample: ['Aborted: reason']
 """
 
 

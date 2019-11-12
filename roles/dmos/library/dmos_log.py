@@ -51,8 +51,9 @@ options:
     elements: dict
     suboptions:
       syslog:
-        type: str
         description: IP address of syslog server to be notified
+        type: list
+        elements: str
       severity:
         type: str
         description:
@@ -77,18 +78,37 @@ options:
     default: merged
 """
 EXAMPLES = """
-# Using Present
+### Using Merged ###
 
-<placeholder for the configuration example prior to module invocation>
+dmos_log:
+  config:
+    - syslog:
+        - 192.168.1.1
+        - 192.168.2.1
+      severity: alert
+  state: merged
 
-- name: Configure logs
-  dmos_log:
-    config:
-      - syslog: 192.168.1.1
-        severity: alert
-    state: merged
+# This configuration will result on the following commands:
 
-<placeholder for the configuration example after module invocation>
+# - log severity alert
+# - log syslog 192.168.1.1
+# - log syslog 192.168.2.1
+
+### Using Delete ###
+
+dmos_log:
+  config:
+    - syslog:
+        - 192.168.1.1
+        - 192.168.2.1
+      severity: informational
+  state: deleted
+
+# This configuration will result on the following commands:
+
+# - no log severity
+# - no log syslog 192.168.2.1
+# - no log syslog 192.168.1.1
 
 
 """
@@ -110,6 +130,16 @@ commands:
   returned: always
   type: list
   sample: ['command 1', 'command 2', 'command 3']
+changed:
+  description: If configuration resulted in any change
+  returned: always
+  type: bool
+  sample: True or False
+response:
+  description: The response of executed commands
+  returned: always
+  type: list
+  sample: ['Aborted: reason']
 """
 
 

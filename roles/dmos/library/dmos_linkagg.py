@@ -61,6 +61,7 @@ options:
           lag_id:
             description: <1-8> LAG ID
             type: int
+            required: true
           admin_status:
             description: The administrative status of this LAG interface
             type: str
@@ -78,6 +79,7 @@ options:
               name:
                 description: Interface name
                 type: str
+                required: true
               port_prio:
                 description: Specify port priority for a LAG member link
                 type: int
@@ -124,18 +126,115 @@ options:
     default: merged
 """
 EXAMPLES = """
-# Using Present
+### Using Merged ###
 
-<placeholder for the configuration example prior to module invocation>
+dmos_linkagg:
+  config:
+    - lag:
+      - lag_id: 1
+        admin_status: up
+        description: Hello World
+        load_balance: dst-ip
+        interface:
+          - name: gigabit-ethernet-1/1/1
+            port_prio: 12
+          - name: gigabit-ethernet-1/1/3
+            port_prio: 15
+        max_active: 4
+        min_active: 3
+        mode: active
+        period: long
+      - lag_id: 2
+        admin_status: down
+        description: Hey Jude
+        load_balance: enhanced
+        interface:
+          - name: gigabit-ethernet-1/1/2
+            port_prio: 113
+          - name: gigabit-ethernet-1/1/5
+        max_active: 2
+        min_active: 1
+        mode: passive
+        period: short
+      sys_prio: 400
+  state: merged
 
-- name: Configure logs
-  dmos_log:
-    config:
-      - syslog: 192.168.1.1
-        severity: alert
-    state: merged
+# This configuration will result on the following commands:
 
-<placeholder for the configuration example after module invocation>
+# - link-aggregation system-priority 400
+# - link-aggregation interface lag 1 administrative-status up
+# - link-aggregation interface lag 1 description "Hello World"
+# - link-aggregation interface lag 1 interface gigabit-ethernet-1/1/1 port-priority 12
+# - link-aggregation interface lag 1 interface gigabit-ethernet-1/1/3 port-priority 15
+# - link-aggregation interface lag 1 load-balance dst-ip
+# - link-aggregation interface lag 1 maximum-active links 4
+# - link-aggregation interface lag 1 minimum-active links 3
+# - link-aggregation interface lag 1 mode active
+# - link-aggregation interface lag 1 period long
+# - link-aggregation interface lag 2 administrative-status down
+# - link-aggregation interface lag 2 description "Hey Jude"
+# - link-aggregation interface lag 2 interface gigabit-ethernet-1/1/2 port-priority 113
+# - link-aggregation interface lag 2 interface gigabit-ethernet-1/1/5
+# - link-aggregation interface lag 2 load-balance enhanced
+# - link-aggregation interface lag 2 maximum-active links 2
+# - link-aggregation interface lag 2 minimum-active links 1
+# - link-aggregation interface lag 2 mode passive
+# - link-aggregation interface lag 2 period short
+
+### Using Delete ###
+
+dmos_linkagg:
+  config:
+    - lag:
+      - lag_id: 1
+        admin_status: up
+        description: Hello World
+        load_balance: dst-ip
+        interface:
+          - name: gigabit-ethernet-1/1/1
+            port_prio: 12
+          - name: gigabit-ethernet-1/1/3
+            port_prio: 15
+        max_active: 4
+        min_active: 3
+        mode: active
+        period: long
+      - lag_id: 2
+        admin_status: down
+        description: Hey Jude
+        load_balance: enhanced
+        interface:
+          - name: gigabit-ethernet-1/1/2
+            port_prio: 113
+          - name: gigabit-ethernet-1/1/5
+        max_active: 2
+        min_active: 1
+        mode: passive
+        period: short
+      sys_prio: 400
+  state: deleted
+
+# This configuration will result on the following commands:
+
+# - no link-aggregation system-priority
+# - no link-aggregation interface lag 1 administrative-status
+# - no link-aggregation interface lag 1 description
+# - no link-aggregation interface lag 1 interface gigabit-ethernet-1/1/3 port-priority
+# - no link-aggregation interface lag 1 interface gigabit-ethernet-1/1/1 port-priority
+# - no link-aggregation interface lag 1 load-balance
+# - no link-aggregation interface lag 1 maximum-active
+# - no link-aggregation interface lag 1 minimum-active
+# - no link-aggregation interface lag 1 mode
+# - no link-aggregation interface lag 1 period
+# - no link-aggregation interface lag 2 administrative-status
+# - no link-aggregation interface lag 2 description
+# - no link-aggregation interface lag 2 interface gigabit-ethernet-1/1/5
+# - no link-aggregation interface lag 2 interface gigabit-ethernet-1/1/2 port-priority
+# - no link-aggregation interface lag 2 load-balance
+# - no link-aggregation interface lag 2 maximum-active
+# - no link-aggregation interface lag 2 minimum-active
+# - no link-aggregation interface lag 2 mode
+# - no link-aggregation interface lag 2 period
 
 
 """
@@ -157,6 +256,16 @@ commands:
   returned: always
   type: list
   sample: ['command 1', 'command 2', 'command 3']
+changed:
+  description: If configuration resulted in any change
+  returned: always
+  type: bool
+  sample: True or False
+response:
+  description: The response of executed commands
+  returned: always
+  type: list
+  sample: ['Aborted: reason']
 """
 
 

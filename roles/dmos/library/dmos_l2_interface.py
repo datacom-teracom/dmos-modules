@@ -96,26 +96,91 @@ options:
     default: merged
 """
 EXAMPLES = """
-# Using Present
+### Using Merged ###
 
-<placeholder for the configuration example prior to module invocation>
+dmos_l2_interface:
+  config:
+    - interface_name: gigabit-ethernet-1/1/6
+      native_vlan_id: 10
+      qinq: true
+      storm_control:
+        - traffic: broadcast
+          percent: 10.1
+        - traffic: multicast
+          percent: 59.5
+        - traffic: unicast
+          percent: 0.1
+      tpid: '0x88a8'
+    - interface_name: gigabit-ethernet-1/1/1
+      native_vlan_id: 12
+      qinq: false
+      storm_control:
+        - traffic: broadcast
+          percent: 1.0
+        - traffic: multicast
+          percent: 1.0
+        - traffic: unicast
+          percent: 1.0
+      tpid: '0x9100'
+  state: merged
 
-- name: Configure L2 Interface
-  dmos_l2_interface:
-    config:
-      - interface_name: gigabit-ethernet-1/1/6
-        native_vlan_id: 1
-        qinq: false
-        storm_control:
-          - traffic: broadcast
-            percent: 10.1
-          - traffic: multicast
-            percent: 59.5
-          - traffic: unicast
-            percent: 0.1
-        tpid: '0x88a8'
+# This configuration will result on the following commands:
 
-<placeholder for the configuration example after module invocation>
+# - switchport interface gigabit-ethernet-1/1/1 native-vlan vlan-id 12
+# - no switchport interface gigabit-ethernet-1/1/1 qinq
+# - switchport interface gigabit-ethernet-1/1/1 storm-control broadcast 1.0
+# - switchport interface gigabit-ethernet-1/1/1 storm-control multicast 1.0
+# - switchport interface gigabit-ethernet-1/1/1 storm-control unicast 1.0
+# - switchport interface gigabit-ethernet-1/1/1 tpid 0x9100
+# - switchport interface gigabit-ethernet-1/1/6 native-vlan vlan-id 10
+# - switchport interface gigabit-ethernet-1/1/6 qinq
+# - switchport interface gigabit-ethernet-1/1/6 storm-control broadcast 10.1
+# - switchport interface gigabit-ethernet-1/1/6 storm-control multicast 59.5
+# - switchport interface gigabit-ethernet-1/1/6 storm-control unicast 0.1
+# - switchport interface gigabit-ethernet-1/1/6 tpid 0x88a8
+
+### Using Deleted ###
+
+dmos_l2_interface:
+  config:
+    - interface_name: gigabit-ethernet-1/1/6
+      native_vlan_id: 10
+      qinq: true
+      storm_control:
+        - traffic: broadcast
+          percent: 10.1
+        - traffic: multicast
+          percent: 59.5
+        - traffic: unicast
+          percent: 0.1
+      tpid: '0x88a8'
+    - interface_name: gigabit-ethernet-1/1/1
+      native_vlan_id: 12
+      qinq: false
+      storm_control:
+        - traffic: broadcast
+          percent: 1.0
+        - traffic: multicast
+          percent: 1.0
+        - traffic: unicast
+          percent: 1.0
+      tpid: '0x9100'
+  state: deleted
+
+# This configuration will result on the following commands:
+
+# - no switchport interface gigabit-ethernet-1/1/1 native-vlan
+# - no switchport interface gigabit-ethernet-1/1/1 qinq
+# - no switchport interface gigabit-ethernet-1/1/1 storm-control broadcast
+# - no switchport interface gigabit-ethernet-1/1/1 storm-control multicast
+# - no switchport interface gigabit-ethernet-1/1/1 storm-control unicast
+# - no switchport interface gigabit-ethernet-1/1/1 tpid
+# - no switchport interface gigabit-ethernet-1/1/6 native-vlan
+# - no switchport interface gigabit-ethernet-1/1/6 qinq
+# - no switchport interface gigabit-ethernet-1/1/6 storm-control broadcast
+# - no switchport interface gigabit-ethernet-1/1/6 storm-control multicast
+# - no switchport interface gigabit-ethernet-1/1/6 storm-control unicast
+# - no switchport interface gigabit-ethernet-1/1/6 tpid
 
 
 """
@@ -137,6 +202,16 @@ commands:
   returned: always
   type: list
   sample: ['command 1', 'command 2', 'command 3']
+changed:
+  description: If configuration resulted in any change
+  returned: always
+  type: bool
+  sample: True or False
+response:
+  description: The response of executed commands
+  returned: always
+  type: list
+  sample: ['Aborted: reason']
 """
 
 

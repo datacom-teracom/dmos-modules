@@ -51,11 +51,12 @@ options:
     elements: dict
     suboptions:
       auth:
-        type: bool
         description: Network time protocol authentication
+        type: bool
       auth_key:
-        type: dict
         description: Authentication key
+        type: list
+        elements: dict
         suboptions:
           id:
             description: <1-4294967295> Key identifier
@@ -65,8 +66,8 @@ options:
             description: Password
             type: str
       client:
-        type: bool
         description: Global SNTP service state
+        type: bool
       max_poll:
         description: <3-17> Longest polling interval (in power of two seconds)
         type: int
@@ -74,8 +75,9 @@ options:
         description: <3-17> Shortest polling interval (in power of two seconds)
         type: int
       server:
-        type: dict
         description: Network time protocol server configuration
+        type: list
+        elements: dict
         suboptions:
           address:
             description: IP address in a.b.c.d or X:X:X:X::X format
@@ -86,7 +88,14 @@ options:
             type: int
       source:
         description: Source IP address from which NTP server connection will be established
-        type: str
+        type: dict
+        suboptions:
+          ipv4:
+            description: IPv4 Address
+            type: str
+          ipv6:
+            description: IPv6 Address
+            type: str
   state:
     description:
     - The state the configuration should be left in
@@ -99,18 +108,74 @@ options:
     default: merged
 """
 EXAMPLES = """
-# Using Present
+### Using Merged ###
 
-<placeholder for the configuration example prior to module invocation>
+dmos_sntp:
+  config:
+    - auth: true
+      auth_key:
+        - id: 10
+          pass: test
+        - id: 12
+          pass: password
+      client: true
+      max_poll: 15
+      min_poll: 12
+      server:
+        - address: 10.0.0.1
+          key_id: 10
+        - address: 20.0.0.2
+          key_id: 12
+      source:
+        ipv4: 100.10.10.1
+        ipv6: 1918::2019
+  state: merged
 
-- name: Configure logs
-  dmos_log:
-    config:
-      - syslog: 192.168.1.1
-        severity: alert
-    state: merged
+# This configuration will result on the following commands:
 
-<placeholder for the configuration example after module invocation>
+# - sntp authenticate
+# - sntp authentication-key 10 md5 test
+# - sntp authentication-key 12 md5 password
+# - sntp client
+# - sntp max-poll 15
+# - sntp min-poll 12
+# - sntp server 10.0.0.1 key 10
+# - sntp server 20.0.0.2 key 12
+# - sntp source ipv4 address 100.10.10.1
+# - sntp source ipv6 address 1918::2019
+
+### Using Delete ###
+
+dmos_sntp:
+  config:
+    - auth: true
+      auth_key:
+        - id: 10
+        - id: 12
+          pass: password
+      client: true
+      max_poll: 15
+      min_poll: 12
+      server:
+        - address: 10.0.0.1
+          key_id: 10
+        - address: 20.0.0.2
+      source:
+        ipv4: 100.10.10.1
+        ipv6: 1918::2019
+  state: deleted
+
+# This configuration will result on the following commands:
+
+# - no sntp authenticate
+# - no sntp authentication-key 10
+# - no sntp client
+# - no sntp max-poll
+# - no sntp min-poll
+# - no sntp server 10.0.0.1 key
+# - no sntp server 20.0.0.2
+# - no sntp source ipv4
+# - no sntp source ipv6
 
 
 """
@@ -132,6 +197,16 @@ commands:
   returned: always
   type: list
   sample: ['command 1', 'command 2', 'command 3']
+changed:
+  description: If configuration resulted in any change
+  returned: always
+  type: bool
+  sample: True or False
+response:
+  description: The response of executed commands
+  returned: always
+  type: list
+  sample: ['Aborted: reason']
 """
 
 

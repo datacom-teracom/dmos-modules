@@ -53,15 +53,22 @@ options:
       vlan_id:
         description: <1-4094> VLAN ID
         type: int
+        required: true
       name:
         description: Text name identifying the VLAN (max 32 chars).
         type: str
       interface:
         description: Statically add interfaces to VLANs and remove interfaces from VLANs
-        type: str
-      tagged:
-        description: Set this interface as an tagged member
-        type: bool
+        type: list
+        elements: dict
+        suboptions:
+          name:
+            description: Interface name
+            type: str
+            required: true
+          tagged:
+            description: Set this interface as an tagged member
+            type: bool
   state:
     description:
     - The state the configuration should be left in
@@ -74,20 +81,47 @@ options:
     default: merged
 """
 EXAMPLES = """
-# Using Present
+### Using Merged ###
 
-<placeholder for the configuration example prior to module invocation>
+dmos_vlan:
+  config:
+    - vlan_id: 2019
+      interface:
+        - name: gigabit-ethernet-1/1/1
+          tagged: true
+      name: null
+    - vlan_id: 2020
+      name: dmos_vlan
+      interface:
+        - name: gigabit-ethernet-1/1/2
+          tagged: false
+    - vlan_id: 2021
+  state: merged
 
-- name: Configure VLANs
-  dmos_vlan:
-    config:
-      - name: Vlan-example
-        vlan_id: 10
-        interface: gigabit-ethernet-1/1/1
-        tagged: 10
-    state: merged
+# This configuration will result on the following commands:
 
-<placeholder for the configuration example after module invocation>
+# - dot1q vlan 2021
+# - dot1q vlan 2019 interface gigabit-ethernet-1/1/1 tagged
+# - dot1q vlan 2020 name dmos_vlan
+# - dot1q vlan 2020 interface gigabit-ethernet-1/1/2 untagged
+
+### Using Deleted ###
+
+dmos_vlan:
+  config:
+    - vlan_id: 2020
+      name: dmos_vlan
+    - vlan_id: 2019
+      interface:
+        - name: gigabit-ethernet-1/1/1
+    - vlan_id: 2021
+  state: deleted
+
+# This configuration will result on the following commands:
+
+# - no dot1q vlan 2021
+# - no dot1q vlan 2019 interface gigabit-ethernet-1/1/1
+# - no dot1q vlan 2020 name
 
 
 """
@@ -109,6 +143,16 @@ commands:
   returned: always
   type: list
   sample: ['command 1', 'command 2', 'command 3']
+changed:
+  description: If configuration resulted in any change
+  returned: always
+  type: bool
+  sample: True or False
+response:
+  description: The response of executed commands
+  returned: always
+  type: list
+  sample: ['Aborted: reason']
 """
 
 

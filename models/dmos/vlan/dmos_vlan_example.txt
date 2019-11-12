@@ -1,15 +1,41 @@
-# Using Present
+### Using Merged ###
 
-<placeholder for the configuration example prior to module invocation>
-
-- name: Configure VLANs
-  dmos_vlan:
-    config:
-      - name: Vlan-example
-        vlan_id: 10
-        interface:
-          name: gigabit-ethernet-1/1/1
+dmos_vlan:
+  config:
+    - vlan_id: 2019
+      interface:
+        - name: gigabit-ethernet-1/1/1
           tagged: true
-    state: merged
+      name: null
+    - vlan_id: 2020
+      name: dmos_vlan
+      interface:
+        - name: gigabit-ethernet-1/1/2
+          tagged: false
+    - vlan_id: 2021
+  state: merged
 
-<placeholder for the configuration example after module invocation>
+# This configuration will result on the following commands:
+
+# - dot1q vlan 2021
+# - dot1q vlan 2019 interface gigabit-ethernet-1/1/1 tagged
+# - dot1q vlan 2020 name dmos_vlan
+# - dot1q vlan 2020 interface gigabit-ethernet-1/1/2 untagged
+
+### Using Deleted ###
+
+dmos_vlan:
+  config:
+    - vlan_id: 2020
+      name: dmos_vlan
+    - vlan_id: 2019
+      interface:
+        - name: gigabit-ethernet-1/1/1
+    - vlan_id: 2021
+  state: deleted
+
+# This configuration will result on the following commands:
+
+# - no dot1q vlan 2021
+# - no dot1q vlan 2019 interface gigabit-ethernet-1/1/1
+# - no dot1q vlan 2020 name

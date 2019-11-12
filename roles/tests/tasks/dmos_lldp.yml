@@ -81,7 +81,6 @@
         reinit_delay: 3
         tx_credit_max: 33
         tx_fast_init: 3
-        
     state: merged
   register: result
 - name: Compare the module result to the expected response

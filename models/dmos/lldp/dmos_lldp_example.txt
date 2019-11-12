@@ -1,24 +1,71 @@
-# Using Present
+### Using Merged ###
 
-<placeholder for the configuration example prior to module invocation>
+dmos_lldp:
+  config:
+    - interface:
+      - name: gigabit-ethernet-1/1/1
+        admin_status: rx-only
+        notification: true
+        tlv_port_description: false
+        tlv_system_capabilities: true
+        tlv_system_description: false
+        tlv_system_name: true
 
-- name: Configure LLDP
-  dmos_lldp:
-    config:
-      - interface:
-          - name: gigabit-ethernet-1/1/1
-            admin_status: rx-only
-            notification: true
-            tlv_port_description: true
-            tlv_system_capabilities: true
-            tlv_system_description: true
-            tlv_system_name: true
-        msg_fast_tx: 1
-        msg_tx_hold_multi: 4
-        msg_tx_interval: 10
-        notification_interval: 30
-        reinit_delay: 2
-        tx_credit_max: 5
-        tx_fast_init: 1
+      - name: gigabit-ethernet-1/1/2
+        admin_status: rx-only
+        notification: true
+        tlv_port_description: false
+        tlv_system_capabilities: true
+        tlv_system_description: false
+        tlv_system_name: true
+      msg_fast_tx: 2020
+      msg_tx_hold_multi: 3
+      msg_tx_interval: 2020
+      notification_interval: 2020
+      reinit_delay: 3
+      tx_credit_max: 33
+      tx_fast_init: 3
+  state: merged
 
-<placeholder for the configuration example after module invocation>
+# This configuration will result on the following commands:
+
+# - lldp interface gigabit-ethernet-1/1/1 admin-status rx-only
+# - lldp interface gigabit-ethernet-1/1/1 notification
+# - no lldp interface gigabit-ethernet-1/1/1 tlvs-tx port-description
+# - lldp interface gigabit-ethernet-1/1/1 tlvs-tx system-capabilities
+# - no lldp interface gigabit-ethernet-1/1/1 tlvs-tx system-description
+# - lldp interface gigabit-ethernet-1/1/1 tlvs-tx system-name
+# - lldp interface gigabit-ethernet-1/1/2 admin-status rx-only
+# - lldp interface gigabit-ethernet-1/1/2 notification
+# - no lldp interface gigabit-ethernet-1/1/2 tlvs-tx port-description
+# - lldp interface gigabit-ethernet-1/1/2 tlvs-tx system-capabilities
+# - no lldp interface gigabit-ethernet-1/1/2 tlvs-tx system-description
+# - lldp interface gigabit-ethernet-1/1/2 tlvs-tx system-name
+# - lldp message-fast-tx 2020
+# - lldp message-tx-hold-multiplier 3
+# - lldp message-tx-interval 2020
+# - lldp notification-interval 2020
+# - lldp reinit-delay 3
+# - lldp tx-credit-max  33
+# - lldp tx-fast-init 3
+
+### Using Delete ###
+
+dmos_lldp:
+  config:
+    - interface:
+      - name: gigabit-ethernet-1/1/1
+        tlv_system_capabilities: true
+        tlv_system_name: true
+      - name: gigabit-ethernet-1/1/2
+      tx_credit_max: 33
+      tx_fast_init: 3
+  state: deleted
+
+# This configuration will result on the following commands:
+
+# - no lldp interface gigabit-ethernet-1/1/2
+# - no lldp interface gigabit-ethernet-1/1/1 tlvs-tx system-capabilities
+# - no lldp interface gigabit-ethernet-1/1/1 tlvs-tx system-name
+# - no lldp tx-credit-max
+# - no lldp tx-fast-init

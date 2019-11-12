@@ -104,9 +104,6 @@ DOCUMENTATION: |
                       choices:
                         - enable
                         - disable
-                    eui_64:
-                      description: Extended Unique Identifier configuration
-                      type: bool
             port:
               description: <1024-65535> TWAMP Server Port
               type: int

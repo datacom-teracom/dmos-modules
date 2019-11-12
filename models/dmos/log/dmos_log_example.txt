@@ -1,12 +1,31 @@
-# Using Present
+### Using Merged ###
 
-<placeholder for the configuration example prior to module invocation>
+dmos_log:
+  config:
+    - syslog:
+        - 192.168.1.1
+        - 192.168.2.1
+      severity: alert
+  state: merged
 
-- name: Configure logs
-  dmos_log:
-    config:
-      - syslog: 192.168.1.1
-        severity: alert
-    state: merged
+# This configuration will result on the following commands:
 
-<placeholder for the configuration example after module invocation>
+# - log severity alert
+# - log syslog 192.168.1.1
+# - log syslog 192.168.2.1
+
+### Using Delete ###
+
+dmos_log:
+  config:
+    - syslog:
+        - 192.168.1.1
+        - 192.168.2.1
+      severity: informational
+  state: deleted
+
+# This configuration will result on the following commands:
+
+# - no log severity
+# - no log syslog 192.168.2.1
+# - no log syslog 192.168.1.1

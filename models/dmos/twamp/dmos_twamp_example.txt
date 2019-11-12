@@ -1,63 +1,160 @@
-# Using Present
+### Using Merged ###
 
-<placeholder for the configuration example prior to module invocation>
+dmos_twamp:
+  config:
+    - reflector:
+        port: 862
+        admin_status: up
+        ipv4:
+          client_address:
+            - address: 10.0.0.1
+              state: disable
+            - address: 10.0.0.2
+              state: enable
+          client_network:
+            - network: 20.0.0.0/24
+              state: enable
+            - network: 10.0.0.0/24
+              state: disable
+        ipv6:
+          client_address:
+            - address: 2018::1
+              state: enable
+            - address: 2018::2
+              state: disable
+          client_network:
+            - network: 2019::/64
+              state: enable
+            - network: 2017::/64
+              state: disable
+      sender:
+        admin_status: down
+        connection:
+          - id: 2
+            admin_status: down
+            ipv6:
+              source_address: 2018::1
+              target_address: 2018::2
+            number_of_packets: 50
+            server_port: 862
+            test_interval: 6
+            test_session:
+              - id: 2
+                ipv4:
+                  source_address: 10.0.0.1
+                  target_address: 10.0.0.2
+                max_port: 65535
+                min_port: 1024
+                dscp: 0
+                packet_size: 64
+              - id: 3
+                ipv6:
+                  source_address: 2018::1
+                  target_address: 2018::2
+          - id: 3
+            admin_status: up
+            ipv4:
+              source_address: 10.0.0.1
+              target_address: 10.0.0.2
+  state: merged
 
-- name: Configure twamp
-  dmos_twamp:
-    config:
-      - reflector:
-          port: 862
-          admin_status: up
-          ipv4:
-            client_address:
-              - address: 10.0.0.1
-                state: disable
-              - address: 10.0.0.2
-                state: enable
-            client_network:
-              - network: 20.0.0.0/24
-                state: enable
-              - network: 10.0.0.0/24
-                state: disable
-          ipv6:
-            client_address:
-              - address: 2018::1
-                state: enable
-              - address: 2018::2
-                state: disable
-            client_network:
-              - network: 2019::/64
-                state: enable
-              - network: 2017::/64
-                state: disable
-        sender:
-          admin_status: down
-          connection:
-            - id: 2
-              admin_status: down
-              ipv6:
-                source_address: 2018::1
-                target_address: 2018::2
-              number_of_packets: 50
-              server_port: 862
-              test_interval: 6
-              test_session:
-                - id: 2
-                  ipv4:
-                    source_address: 10.0.0.1
-                    target_address: 10.0.0.2
-                  max_port: 65535
-                  min_port: 1024
-                  dscp: 0
-                  packet_size: 64
-                - id: 3
-                  ipv6:
-                    source_address: 2018::1
-                    target_address: 2018::2
-            - id: 3
-              admin_status: up
-              ipv4:
-                source_address: 10.0.0.1
-                target_address: 10.0.0.2
+# This configuration will result on the following commands:
 
-<placeholder for the configuration example after module invocation>
+# - oam twamp reflector administrative-status up
+# - oam twamp reflector ipv4 client-address 10.0.0.1 disable
+# - oam twamp reflector ipv4 client-address 10.0.0.2 enable
+# - oam twamp reflector ipv4 client-network 20.0.0.0/24 enable
+# - oam twamp reflector ipv4 client-network 10.0.0.0/24 disable
+# - oam twamp reflector ipv6 client-address 2018::1 enable
+# - oam twamp reflector ipv6 client-address 2018::2 disable
+# - oam twamp reflector ipv6 client-network 2019::/64 enable
+# - oam twamp reflector ipv6 client-network 2017::/64 disable
+# - oam twamp reflector port 862
+# - oam twamp sender administrative-status down
+# - oam twamp sender connection 3 administrative-status up
+# - oam twamp sender connection 3 ipv4 source-address 10.0.0.1
+# - oam twamp sender connection 3 ipv4 target-address 10.0.0.2
+# - oam twamp sender connection 2 administrative-status down
+# - oam twamp sender connection 2 ipv6 source-address 2018::1
+# - oam twamp sender connection 2 ipv6 target-address 2018::2
+# - oam twamp sender connection 2 number-of-packets 50
+# - oam twamp sender connection 2 server-port 862
+# - oam twamp sender connection 2 test-interval 6
+# - oam twamp sender connection 2 test-session 3 ipv6 source-address 2018::1
+# - oam twamp sender connection 2 test-session 3 ipv6 target-address 2018::2
+# - oam twamp sender connection 2 test-session 2 ipv4 source-address 10.0.0.1
+# - oam twamp sender connection 2 test-session 2 ipv4 target-address 10.0.0.2
+# - oam twamp sender connection 2 test-session 2 dscp 0
+# - oam twamp sender connection 2 test-session 2 max-port 65535
+# - oam twamp sender connection 2 test-session 2 min-port 1024
+# - oam twamp sender connection 2 test-session 2 packet-size 64
+
+### Using Delete ###
+
+dmos_twamp:
+  config:
+    - reflector:
+        port: 862
+        admin_status: down
+        ipv4:
+          client_address:
+            - address: 10.0.0.1
+              state: disable
+            - address: 10.0.0.2
+          client_network:
+            - network: 20.0.0.0/24
+              state: enable
+            - network: 10.0.0.0/24
+        ipv6:
+          client_address:
+            - address: 2018::1
+              state: enable
+            - address: 2018::2
+          client_network:
+            - network: 2017::/64
+              state: disable
+            - network: 2019::/64
+      sender:
+        admin_status: down
+        connection:
+          - id: 2
+            number_of_packets: 50
+            server_port: 862
+            test_interval: 6
+            test_session:
+              - id: 2
+                ipv4:
+                  source_address: 10.0.0.1
+                  target_address: 10.0.0.2
+                max_port: 65535
+                min_port: 1024
+                dscp: 0
+                packet_size: 64
+              - id: 3
+          - id: 3
+  state: deleted
+
+# This configuration will result on the following commands:
+
+# - no oam twamp reflector administrative-status
+# - no oam twamp reflector ipv4 client-address 10.0.0.1 disable
+# - no oam twamp reflector ipv4 client-address 10.0.0.2
+# - no oam twamp reflector ipv4 client-network 20.0.0.0/24 enable
+# - no oam twamp reflector ipv4 client-network 10.0.0.0/24
+# - no oam twamp reflector ipv6 client-address 2018::1 enable
+# - no oam twamp reflector ipv6 client-address 2018::2
+# - no oam twamp reflector ipv6 client-network 2019::/64
+# - no oam twamp reflector ipv6 client-network 2017::/64 disable
+# - no oam twamp reflector port
+# - no oam twamp sender administrative-status
+# - no oam twamp sender connection 3
+# - no oam twamp sender connection 2 number-of-packets
+# - no oam twamp sender connection 2 server-port
+# - no oam twamp sender connection 2 test-interval
+# - no oam twamp sender connection 2 test-session 3
+# - no oam twamp sender connection 2 test-session 2 ipv4 source-address
+# - no oam twamp sender connection 2 test-session 2 ipv4 target-address
+# - no oam twamp sender connection 2 test-session 2 dscp
+# - no oam twamp sender connection 2 test-session 2 max-port
+# - no oam twamp sender connection 2 test-session 2 min-port
+# - no oam twamp sender connection 2 test-session 2 packet-size

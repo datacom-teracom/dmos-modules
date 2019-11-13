@@ -8,6 +8,44 @@ from ansible.module_utils.network.dmos.dmos import dmos_argument_spec
 from ansible.module_utils.network.dmos.dmos import run_commands
 
 
+DOCUMENTATION = """
+---
+module: dmos_command
+version_added: 4.9
+short_description: execute show commands on dmos devices.
+description: execute show commands on dmos devices.
+author: Ansible Network Engineer
+options:
+  commands:
+    description:
+      - list of DmOS show command
+    required: false
+"""
+
+EXAMPLES = """
+# Execute show running-config interface l3 command on DmOS device
+- dmos_command:
+    commands:
+      - show running-config interface l3
+      - show oam twamp sender
+"""
+
+RETURN = """
+changed:
+  description: Always false.
+  returned: always
+  sample: True or False
+stdout:
+  description: Raw output of command.
+  returned: always
+  sample: ["interface l3 test\n ipv4 address 10.0.0.1/24\n!"]
+stdout_lines:
+  description: Raw output of command splitted in lines.
+  returned: always
+  sample: ["interface l3 test", "ipv4 address 10.0.0.1/24", "!"]
+"""
+
+
 def parse_commands(module, warnings):
     commands = transform_commands(module)
 

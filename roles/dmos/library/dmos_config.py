@@ -9,6 +9,50 @@ from ansible.module_utils.network.dmos.dmos import get_config, edit_config
 from ansible.module_utils.network.dmos.utils.utils import get_command_list_from_curly_braces, get_command_list_diff
 
 
+DOCUMENTATION = """
+---
+module: dmos_config
+version_added: 4.9
+short_description: execute configuration commands on dmos devices.
+description: execute configuration commands on dmos devices.
+author: Ansible Network Engineer
+options:
+  lines:
+    description:
+      - list of DmOS configuration commands
+    required: false
+"""
+
+EXAMPLES = """
+# Execute interface l3 test ipv4 address 10.0.0.1/24 command on DmOS device
+- dmos_config:
+    lines:
+      - interface l3 test ipv4 address 10.0.0.1/24
+      - interface l3 test ipv6 enable
+"""
+
+RETURN = """
+changed:
+  description: If configuration resulted in any change.
+  returned: always
+  sample: True or False
+changes:
+  description: List of executed commands.
+  returned: always
+  sample: ["interface l3 test ipv4 address 10.0.0.1/24"]
+msg:
+  description: Error message
+  returned: on error
+  type: string
+  sample: 'Aborted: reason'
+response:
+  description: The response of each executed commands
+  returned: always
+  type: list
+  sample: ['Aborted: reason']
+"""
+
+
 def main():
     """ main entry point for module execution
     """
@@ -41,6 +85,8 @@ def main():
             if not module.check_mode:
                 response = edit_config(module=module, candidates=candidates)
                 result['response'] = response['response']
+                if response.get('error'):
+                    module.fail_json(msg=response['error'])
 
             result['changed'] = True
 

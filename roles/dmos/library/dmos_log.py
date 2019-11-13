@@ -133,8 +133,13 @@ changed:
   returned: always
   type: bool
   sample: True or False
+msg:
+  description: Error message
+  returned: on error
+  type: string
+  sample: 'Aborted: reason'
 response:
-  description: The response of executed commands
+  description: The response of each executed commands
   returned: always
   type: list
   sample: ['Aborted: reason']

@@ -10,6 +10,65 @@ from ansible.module_utils.network.dmos.dmos import run_commands
 from ansible.module_utils.network.dmos.dmos import dmos_argument_spec
 
 
+DOCUMENTATION = """
+---
+module: dmos_system
+version_added: 4.9
+short_description: Configure system of dmos devices.
+description: Configure system of dmos devices.
+author: Ansible Network Engineer
+options:
+  hour:
+    description: DmOS system hour
+    required: true
+  minute:
+    description: DmOS system minute
+    required: true
+  second:
+    description: DmOS system second
+    required: false
+  year:
+    description: DmOS system year
+    required: true
+  month:
+    description: DmOS system month
+    required: true
+  day:
+    description: DmOS system day
+    required: true
+"""
+
+EXAMPLES = """
+# Set DmOS device system time
+- dmos_system:
+  hour: 19
+  minute: 18
+  second: 47
+  year: 2018
+  month: 10
+  day: 18
+"""
+
+RETURN = """
+changed:
+  description: If configuration resulted in any change.
+  returned: always
+  sample: True or False
+command:
+  description: Executed commands.
+  returned: always
+  sample: set system clock 19:18:47 20181018
+stdout:
+  description: Raw output of command.
+  returned: always
+  sample: ["Clock is set."]
+stdout_lines:
+  description: Raw output of command splitted in lines.
+  returned: always
+  sample: ["Clock is set."]
+"""
+
+
 def parse_command(module, warnings):
     command = """set system clock {0:02d}:{1:02d}:{2:02d} """.format(
         module.params['hour'], module.params['minute'], module.params['second'])

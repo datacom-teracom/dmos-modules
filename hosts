@@ -1,8 +1,9 @@
-[vyos]
-192.168.0.54
-[vyos:vars]
-ansible_ssh_pass=vyos
-[dmos]
-dm4170 ansible_host=192.168.0.25 ansible_network_os=dmos
-[dmos:vars]
+[sender]
+DM4370_1 ansible_host=192.168.0.11 ansible_network_os=dmos
+[sender:vars]
+ansible_ssh_pass=admin
+
+[reflector]
+DM4370_2 ansible_host=192.168.0.12 ansible_network_os=dmos
+[reflector:vars]
 ansible_ssh_pass=admin

@@ -1,0 +1,4 @@
+- dmos_twamp:
+    config:
+      - reflector:
+          admin_status: up

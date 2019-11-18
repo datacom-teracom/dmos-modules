@@ -1,0 +1,13 @@
+- dmos_twamp:
+    config:
+      - sender:
+          connection:
+            - id: 2
+              ipv4:
+                source_address: "{{ sender_address }}"
+                target_address: "{{ reflector_address }}"
+              test_session:
+                - id: 2
+                  ipv4:
+                    source_address: "{{ sender_address }}"
+                    target_address: "{{ reflector_address }}"

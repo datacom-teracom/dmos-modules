@@ -1,0 +1,14 @@
+- name: Configure VLAN
+  dmos_vlan:
+    config:
+      - vlan_id: 10
+        interface:
+          - name: gigabit-ethernet-1/1/1
+
+- name: Configure Interface L3
+  dmos_l3_interface:
+    config:
+      - name: test
+        lower_layer_if: 10
+        ipv4:
+          address: "{{ reflector_address }}/24"

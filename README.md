@@ -13,5 +13,5 @@ To run:
 - Clone https://github.com/datacom-teracom/dmos-modules.git
 - Change directory into the repository root dir: $ cd dmos-modules
 - At the setup env, run ansible:
- (venv) User@Host:~/ansible/dmos-modules$ ansible-playbook playbook.yml
+ (venv) User@Host:~/ansible/dmos-modules$ ansible-playbook basic_test.yml
 

@@ -1,4 +1,5 @@
 ---
+
 - name: DmOS Facts
   dmos_facts:
     gather_network_resources:

@@ -1,0 +1,6 @@
+- name: Basic tests
+  hosts: basic_test
+  remote_user: admin
+  connection: network_cli
+  roles:
+    - tests

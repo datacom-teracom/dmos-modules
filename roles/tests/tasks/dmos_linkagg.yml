@@ -119,7 +119,7 @@
                 port_prio: 32768
               - name: gigabit-ethernet-1/1/3
                 port_prio: 32768
-            max_active: 8
+            max_active: "{{ max_active }}"
             min_active: 1
             mode: static
             period: long

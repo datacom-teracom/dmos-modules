@@ -31,7 +31,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (merged)
-  dmos_vlan:
+  datacom.dmos.dmos_vlan:
     config:
       - vlan_id: 2019
         interface:
@@ -94,7 +94,7 @@
         - no dot1q vlan 2020 name
       failed: false
 - name: Check for correct argspec and state (deleted)
-  dmos_vlan:
+  datacom.dmos.dmos_vlan:
     config:
       - vlan_id: 2020
         name: dmos_vlan

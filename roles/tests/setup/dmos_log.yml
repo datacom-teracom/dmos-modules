@@ -7,7 +7,7 @@
         - severity: informational
           syslog: null
 - name: Check for correct argspec and state
-  dmos_log:
+  datacom.dmos.dmos_log:
     config: []
     state: deleted
   register: result

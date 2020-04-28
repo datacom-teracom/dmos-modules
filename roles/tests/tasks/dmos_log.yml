@@ -23,7 +23,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (merged)
-  dmos_log:
+  datacom.dmos.dmos_log:
     config:
       - syslog:
           - 192.168.1.1
@@ -63,7 +63,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (deleted)
-  dmos_log:
+  datacom.dmos.dmos_log:
     config:
       - syslog:
           - 192.168.1.1

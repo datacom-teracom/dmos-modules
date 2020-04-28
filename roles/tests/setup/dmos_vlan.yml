@@ -1,7 +1,7 @@
 ################################# Test Setup ##################################
 
 - name: Deleting vlan configuration
-  dmos_vlan:
+  datacom.dmos.dmos_vlan:
     config: []
     state: deleted
   register: result

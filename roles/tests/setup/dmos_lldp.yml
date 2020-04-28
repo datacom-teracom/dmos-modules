@@ -1,7 +1,7 @@
 ################################# Test Setup ##################################
 
 - name: Deleting lldp configuration
-  dmos_lldp:
+  datacom.dmos.dmos_lldp:
     config: []
     state: deleted
   register: result

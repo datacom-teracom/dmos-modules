@@ -12,7 +12,7 @@
           server: null
           source: null
 - name: Check for correct argspec and state
-  dmos_sntp:
+  datacom.dmos.dmos_sntp:
     config: []
     state: deleted
   register: result

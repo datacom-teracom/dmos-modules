@@ -61,7 +61,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (merged)
-  dmos_linkagg:
+  datacom.dmos.dmos_linkagg:
     config:
       - lag:
         - lag_id: 1
@@ -169,7 +169,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (deleted)
-  dmos_linkagg:
+  datacom.dmos.dmos_linkagg:
     config:
       - lag:
         - lag_id: 1

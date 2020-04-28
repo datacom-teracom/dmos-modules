@@ -46,7 +46,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (merged)
-  dmos_sntp:
+  datacom.dmos.dmos_sntp:
     config:
       - auth: true
         auth_key:
@@ -126,7 +126,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (deleted)
-  dmos_sntp:
+  datacom.dmos.dmos_sntp:
     config:
       - auth: true
         auth_key:

@@ -1,7 +1,6 @@
 - name: Configure Sender
   hosts: sender
   remote_user: admin
-  connection: network_cli
   roles:
     - sender
   vars:
@@ -11,7 +10,6 @@
 - name: Configure Reflector
   hosts: reflector
   remote_user: admin
-  connection: network_cli
   roles:
     - reflector
   vars:

@@ -56,7 +56,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (merged)
-  dmos_lldp:
+  datacom.dmos.dmos_lldp:
     config:
       - interface:
         - name: gigabit-ethernet-1/1/1
@@ -150,7 +150,7 @@
         - no lldp tx-fast-init
       failed: false
 - name: Check for correct argspec and state (deleted)
-  dmos_lldp:
+  datacom.dmos.dmos_lldp:
     config:
       - interface:
         - name: gigabit-ethernet-1/1/1

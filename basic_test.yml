@@ -1,6 +1,5 @@
 - name: Basic tests
   hosts: basic_test
-  remote_user: admin
-  connection: network_cli
+  gather_facts: no
   roles:
     - tests

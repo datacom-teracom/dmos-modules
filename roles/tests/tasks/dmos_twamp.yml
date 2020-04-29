@@ -112,7 +112,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (merged)
-  dmos_twamp:
+  datacom.dmos.dmos_twamp:
     config:
       - reflector:
           port: 862
@@ -318,7 +318,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (deleted)
-  dmos_twamp:
+  datacom.dmos.dmos_twamp:
     config:
       - reflector:
           port: 862

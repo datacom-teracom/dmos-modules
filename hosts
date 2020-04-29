@@ -1,9 +1,16 @@
-[sender]
-DM4370_1 ansible_host=192.168.0.11 ansible_network_os=dmos
-[sender:vars]
+[all:vars]
+ansible_connection=ansible.netcommon.network_cli
+ansible_user=admin
 ansible_ssh_pass=admin
+ansible_network_os=datacom.dmos.dmos
+
+[sender]
+DM4370_1 ansible_host=192.168.0.11
 
 [reflector]
-DM4370_2 ansible_host=192.168.0.12 ansible_network_os=dmos
-[reflector:vars]
-ansible_ssh_pass=admin
+DM4370_2 ansible_host=192.168.0.12
+
+[basic_test]
+DM4170 ansible_host=172.22.126.157
+[basic_test:vars]
+max_active=16

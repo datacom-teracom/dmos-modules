@@ -1,5 +1,4 @@
 ################################# Test Setup ##################################
-
 - include_tasks: ../setup/dmos_l3_interface.yml
 
 - name: Test setup (creating vlans)
@@ -20,7 +19,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state
-  dmos_vlan:
+  datacom.dmos.dmos_vlan:
     config:
       - vlan_id: 10
       - vlan_id: 12
@@ -149,7 +148,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (merged)
-  dmos_l3_interface:
+  datacom.dmos.dmos_l3_interface:
     config:
       - name: interface
         description: Hello World
@@ -354,7 +353,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (deleted)
-  dmos_l3_interface:
+  datacom.dmos.dmos_l3_interface:
     config:
       - name: interface
         description: Hello World

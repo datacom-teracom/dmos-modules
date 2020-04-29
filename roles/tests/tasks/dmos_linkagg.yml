@@ -61,7 +61,7 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (merged)
-  dmos_linkagg:
+  datacom.dmos.dmos_linkagg:
     config:
       - lag:
         - lag_id: 1
@@ -119,18 +119,7 @@
                 port_prio: 32768
               - name: gigabit-ethernet-1/1/3
                 port_prio: 32768
-            max_active: 4
-            min_active: 1
-            mode: static
-            period: long
-          - lag_id: 2
-            admin_status: up
-            description: null
-            load_balance: enhanced
-            interface:
-              - name: gigabit-ethernet-1/1/2
-                port_prio: 32768
-            max_active: 4
+            max_active: "{{ max_active }}"
             min_active: 1
             mode: static
             period: long
@@ -176,19 +165,11 @@
         - no link-aggregation interface lag 1 minimum-active
         - no link-aggregation interface lag 1 mode
         - no link-aggregation interface lag 1 period
-        - no link-aggregation interface lag 2 administrative-status
-        - no link-aggregation interface lag 2 description
-        - no link-aggregation interface lag 2 interface gigabit-ethernet-1/1/5
-        - no link-aggregation interface lag 2 interface gigabit-ethernet-1/1/2 port-priority
-        - no link-aggregation interface lag 2 load-balance
-        - no link-aggregation interface lag 2 maximum-active
-        - no link-aggregation interface lag 2 minimum-active
-        - no link-aggregation interface lag 2 mode
-        - no link-aggregation interface lag 2 period
+        - no link-aggregation interface lag 2
       failed: false
       response: []
 - name: Check for correct argspec and state (deleted)
-  dmos_linkagg:
+  datacom.dmos.dmos_linkagg:
     config:
       - lag:
         - lag_id: 1
@@ -205,17 +186,6 @@
           mode: active
           period: long
         - lag_id: 2
-          admin_status: down
-          description: Hey Jude
-          load_balance: enhanced
-          interface:
-            - name: gigabit-ethernet-1/1/2
-              port_prio: 113
-            - name: gigabit-ethernet-1/1/5
-          max_active: 2
-          min_active: 1
-          mode: passive
-          period: short
         sys_prio: 400
     state: deleted
   register: result

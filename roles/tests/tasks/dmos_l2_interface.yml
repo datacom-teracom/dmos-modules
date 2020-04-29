@@ -20,6 +20,8 @@
       failed: false
       response: []
 - name: Check for correct argspec and state
+  collections:
+    - datacom.dmos
   dmos_vlan:
     config:
       - vlan_id: 10
@@ -83,6 +85,8 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (merged)
+  collections:
+    - datacom.dmos
   dmos_l2_interface:
     config:
       - interface_name: gigabit-ethernet-1/1/6
@@ -176,6 +180,8 @@
       failed: false
       response: []
 - name: Check for correct argspec and state (deleted)
+  collections:
+    - datacom.dmos
   dmos_l2_interface:
     config:
       - interface_name: gigabit-ethernet-1/1/6

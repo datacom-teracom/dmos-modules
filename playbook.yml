@@ -1,9 +1,7 @@
 - name: Configure Sender
   hosts: sender
   remote_user: admin
-  connection: network_cli
   roles:
-    - dmos
     - sender
   vars:
     sender_address: 10.0.0.1
@@ -12,9 +10,8 @@
 - name: Configure Reflector
   hosts: reflector
   remote_user: admin
-  connection: network_cli
   roles:
-    - dmos
     - reflector
   vars:
     reflector_address: 10.0.0.2
+

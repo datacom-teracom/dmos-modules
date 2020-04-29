@@ -1,6 +1,8 @@
 ################################# Test Setup ##################################
 
 - name: Deleting switchport configuration
+  collections:
+    - datacom.dmos
   dmos_l2_interface:
     config: []
     state: deleted
@@ -12,6 +14,8 @@
     that: "{{ not result.get('after') }}"
 
 - name: Deleting vlan configuration
+  collections:
+    - datacom.dmos
   dmos_vlan:
     config: []
     state: deleted

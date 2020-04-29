@@ -9,7 +9,7 @@
             admin_status: up
             connection: null
 - name: Check for correct argspec and state
-  dmos_twamp:
+  datacom.dmos.dmos_twamp:
     config: []
     state: deleted
   register: result

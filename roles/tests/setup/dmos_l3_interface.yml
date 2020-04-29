@@ -1,7 +1,7 @@
 ################################# Test Setup ##################################
 
 - name: Deleting l3 interface configuration
-  dmos_l3_interface:
+  datacom.dmos.dmos_l3_interface:
     config: []
     state: deleted
   register: result
@@ -12,7 +12,7 @@
     that: "{{ not result.get('after') }}"
 
 - name: Deleting vlan configuration
-  dmos_vlan:
+  datacom.dmos.dmos_vlan:
     config: []
     state: deleted
   register: result

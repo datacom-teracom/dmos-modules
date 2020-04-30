@@ -15,7 +15,7 @@
               tagged: true
           name: null
         - vlan_id: 2020
-          name: dmos_vlan
+          name: dmos vlan
           interface:
             - name: gigabit-ethernet-1/1/2
               tagged: false
@@ -26,7 +26,7 @@
       commands:
         - dot1q vlan 2021
         - dot1q vlan 2019 interface gigabit-ethernet-1/1/1 tagged
-        - dot1q vlan 2020 name dmos_vlan
+        - dot1q vlan 2020 name "dmos vlan"
         - dot1q vlan 2020 interface gigabit-ethernet-1/1/2 untagged
       failed: false
       response: []
@@ -39,7 +39,7 @@
             tagged: true
         name: null
       - vlan_id: 2020
-        name: dmos_vlan
+        name: dmos vlan
         interface:
           - name: gigabit-ethernet-1/1/2
             tagged: false
@@ -69,7 +69,7 @@
             tagged: true
         name: null
       - vlan_id: 2020
-        name: dmos_vlan
+        name: dmos vlan
         interface:
           - name: gigabit-ethernet-1/1/2
             tagged: false
@@ -97,7 +97,7 @@
   datacom.dmos.dmos_vlan:
     config:
       - vlan_id: 2020
-        name: dmos_vlan
+        name: dmos vlan
       - vlan_id: 2019
         interface:
           - name: gigabit-ethernet-1/1/1
